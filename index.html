@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0D0D0D">
+  <title>创客OPC · 共建商圈｜一个项目，众人共创</title>
+  <meta name="description" content="汇聚同城AI爱好者、创业者、实体商家，以AI赋能本地商业。免费赋能+项目孵化+资源对接+同城落地。">
+
+  <!-- Open Graph / 社交分享 -->
+  <meta property="og:title" content="创客OPC · 共建商圈｜一个项目，众人共创">
+  <meta property="og:description" content="汇聚同城AI爱好者、创业者、实体商家，以AI赋能本地商业。免费赋能+项目孵化+资源对接+同城落地。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20dark%20landing%20page%20for%20an%20AI%20co-creation%20community%2C%20orange%20and%20black%20color%20scheme%2C%20geometric%20network%20nodes%20connecting%2C%20futuristic%20tech%20vibe%2C%20typography%20%22%E5%88%9B%E5%AE%A2OPC%22%20and%20%22AI%E5%85%B1%E5%BB%BA%E5%95%86%E5%9C%88%22%2C%201200x630%20social%20share%20banner&image_size=landscape_16_9">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- JSON-LD 结构化数据 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "创客OPC · AI同城共建商圈",
+    "description": "纯同城AI互助共创圈子，面向普通人、上班族、实体店主、创业者",
+    "url": "https://chuangkeopc.com",
+    "slogan": "一个项目 · 众人共创",
+    "foundingDate": "2026",
+    "areaServed": "China"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ===== 顶部导航 ===== -->
+  <header class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#hero" class="nav__brand">
+        <div class="nav__logo-icon">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="18" stroke="url(#logoGradient)" stroke-width="2.5" stroke-dasharray="4 3"/>
+            <circle cx="20" cy="20" r="5" fill="url(#logoGradient)"/>
+            <circle cx="20" cy="7" r="3.5" fill="#FF6B35"/>
+            <circle cx="30.5" cy="25" r="3.5" fill="#FF8C42"/>
+            <circle cx="9.5" cy="25" r="3.5" fill="#FFB347"/>
+            <path d="M20 13v7M24 23l5.5 3M15.5 23l-5.5 3" stroke="url(#logoGradient)" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="logoGradient" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FF6B35"/>
+                <stop offset="1" stop-color="#FF8C42"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="nav__brand-text">创客OPC<span class="text-orange"> · 共建商圈</span></span>
+      </a>
+
+      <!-- 桌面端导航链接 -->
+      <nav class="nav__links" id="navLinks">
+        <a href="#hero" class="nav__link active">首页</a>
+        <a href="#about" class="nav__link">定位</a>
+        <a href="#projects" class="nav__link">项目</a>
+        <a href="#cases" class="nav__link">案例</a>
+        <a href="#services" class="nav__link">服务</a>
+        <a href="#faq" class="nav__link">FAQ</a>
+        <a href="#submit" class="nav__link">点子</a>
+        <a href="#join" class="nav__link nav__link--cta">免费加入</a>
+      </nav>
+
+      <!-- 汉堡菜单按钮（移动端） -->
+      <button class="nav__burger" id="navBurger" aria-label="打开菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+
+    <!-- 移动端下拉菜单 -->
+    <div class="nav__mobile-menu" id="mobileMenu">
+      <a href="#hero" class="nav__m-link">首页</a>
+      <a href="#about" class="nav__m-link">核心定位</a>
+      <a href="#projects" class="nav__m-link">共建项目</a>
+      <a href="#rules" class="nav__m-link">共建规则</a>
+      <a href="#cases" class="nav__m-link">实战案例</a>
+      <a href="#services" class="nav__m-link">核心服务</a>
+      <a href="#faq" class="nav__m-link">常见问题</a>
+      <a href="#submit" class="nav__m-link">提交点子</a>
+      <a href="#join" class="nav__m-link nav__m-link--cta">免费加入商圈</a>
+    </div>
+  </header>
+
+  <!-- ===== Hero 首屏 ===== -->
+  <section class="hero" id="hero">
+    <!-- 粒子背景画布 -->
+    <canvas id="particleCanvas" class="hero__particles"></canvas>
+
+    <!-- 网格背景 -->
+    <div class="hero__grid-bg" aria-hidden="true"></div>
+
+    <!-- 浮动光晕 -->
+    <div class="hero__orbs" aria-hidden="true">
+      <div class="hero__orb hero__orb--1"></div>
+      <div class="hero__orb hero__orb--2"></div>
+      <div class="hero__orb hero__orb--3"></div>
+    </div>
+
+    <div class="hero__content">
+      <div class="hero__main">
+        <div class="hero__tag" data-animate>
+          <span class="hero__tag-dot"></span>
+          同城商圈 · 项目共建 · 合作共赢
+        </div>
+
+        <h1 class="hero__title" data-animate>
+          <span class="hero__title-line">创客OPC</span>
+          <span class="hero__title-line hero__title-line--accent">AI同城共建商圈</span>
+        </h1>
+        <p class="hero__subtitle" data-animate>一个项目 · 众人共创</p>
+        <p class="hero__desc" data-animate>汇聚同城AI爱好者、创业者、实体商家<br>以AI赋能本地商业 · 共建 · 共享 · 共赢</p>
+
+        <div class="hero__stats" data-animate>
+          <div class="hero__stat">
+            <span class="hero__stat-num" data-count="100">0</span><span class="hero__stat-suffix">+</span>
+            <span class="hero__stat-label">免费成员</span>
+          </div>
+          <div class="hero__stat-divider"></div>
+          <div class="hero__stat">
+            <span class="hero__stat-num" data-count="4">0</span><span class="hero__stat-suffix">大</span>
+            <span class="hero__stat-label">专属福利</span>
+          </div>
+          <div class="hero__stat-divider"></div>
+          <div class="hero__stat">
+            <span class="hero__stat-num" data-count="5">0</span><span class="hero__stat-suffix">个</span>
+            <span class="hero__stat-label">共建项目</span>
+          </div>
+          <div class="hero__stat-divider"></div>
+          <div class="hero__stat">
+            <span class="hero__stat-num" data-count="7">0</span><span class="hero__stat-suffix">项</span>
+            <span class="hero__stat-label">核心服务</span>
+          </div>
+        </div>
+
+        <div class="hero__actions" data-animate>
+          <a href="#join" class="btn btn--primary">
+            免费加入商圈
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a href="#about" class="btn btn--outline">了解更多</a>
+        </div>
+      </div>
+
+      <div class="hero__side" data-animate>
+        <div class="hero__side-card">
+          <h3 class="hero__side-title">加入即可获得</h3>
+          <div class="hero__side-accordion">
+            <details class="hero__side-item" open>
+              <summary class="hero__side-header">
+                <span class="hero__side-check">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="hero__side-name">免费实现一个 AI 小愿望</span>
+                <span class="hero__side-arrow">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </summary>
+              <div class="hero__side-body">
+                <p>提交你的 AI 设计或开发需求，排队有序服务。支持 AI 海报、PPT、宣传单页、简易网站、文案润色等，一人一愿，质量保证。</p>
+              </div>
+            </details>
+
+            <details class="hero__side-item">
+              <summary class="hero__side-header">
+                <span class="hero__side-check">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="hero__side-name">自助 AI 工具账号使用权</span>
+                <span class="hero__side-arrow">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </summary>
+              <div class="hero__side-body">
+                <p>入圈即享自助 AI 工具平台账号，支持自主充值、独立操作。按需生成海报、文案、视频脚本、商业 PPT 等办公素材。</p>
+              </div>
+            </details>
+
+            <details class="hero__side-item">
+              <summary class="hero__side-header">
+                <span class="hero__side-check">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="hero__side-name">同城资源与项目对接机会</span>
+                <span class="hero__side-arrow">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </summary>
+              <div class="hero__side-body">
+                <p>对接同城人脉、商家与创业伙伴，项目合作机会优先推荐。人脉即钱脉，在圈子里找到志同道合的同行者。</p>
+              </div>
+            </details>
+
+            <details class="hero__side-item">
+              <summary class="hero__side-header">
+                <span class="hero__side-check">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="hero__side-name">线下沙龙与实战培训名额</span>
+                <span class="hero__side-arrow">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </summary>
+              <div class="hero__side-body">
+                <p>定期举办小型 AI 沙龙、项目交流会与技能培训。面对面学习对接，真实可感，实战出真知。</p>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 向下滚动提示 -->
+    <div class="hero__scroll-hint" aria-hidden="true">
+      <div class="hero__scroll-mouse">
+        <div class="hero__scroll-wheel"></div>
+      </div>
+      <span>向下滚动探索</span>
+    </div>
+  </section>
+
+  <!-- ===== 数据亮点 ===== -->
+  <section class="section section--stats" id="stats">
+    <div class="container container--wide">
+      <div class="stats-grid" data-animate>
+        <div class="stat-card">
+          <div class="stat-card__num"><span data-count="100">0</span><span class="stat-card__suffix">+</span></div>
+          <div class="stat-card__label">同城成员</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__num"><span data-count="20">0</span><span class="stat-card__suffix">+</span></div>
+          <div class="stat-card__label">孵化项目</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__num"><span data-count="50">0</span><span class="stat-card__suffix">+</span></div>
+          <div class="stat-card__label">商业案例</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__num"><span data-count="4">0</span><span class="stat-card__suffix">场</span></div>
+          <div class="stat-card__label">月均沙龙</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 核心定位 ===== -->
+  <section class="section section--about" id="about">
+    <div class="container">
+      <div class="section__head" data-animate>
+        <span class="section__tag">ABOUT</span>
+        <h2 class="section__title">我们是谁<span class="text-orange">？</span></h2>
+      </div>
+
+      <div class="about__card" data-animate>
+        <div class="about__icon-wrap">
+          <div class="about__ai-ring">
+            <svg viewBox="0 0 64 64" fill="none" class="about__ai-icon">
+              <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="2"/>
+              <path d="M22 32h20M32 22v20M25 25l14 14M39 25L25 39" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="32" cy="32" r="4" fill="currentColor"/>
+              <circle cx="44" cy="20" r="3" fill="currentColor" opacity="0.5"/>
+              <circle cx="20" cy="44" r="3" fill="currentColor" opacity="0.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <p class="about__lead">纯同城 <strong class="text-orange">AI互助共创圈子</strong></p>
+        <p class="about__sub">面向所有普通人、上班族、实体店主、创业者<br>无需深厚技术，有想法就能来</p>
+
+        <div class="about__tags">
+          <span class="about__tag">免费赋能</span>
+          <span class="about__tag about__tag--active">项目孵化</span>
+          <span class="about__tag">资源对接</span>
+          <span class="about__tag about__tag--active">同城落地</span>
+        </div>
+
+        <p class="about__summary">打破单人创业壁垒 · 抱团用AI赚钱提效做项目</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 共建项目 ===== -->
+  <section class="section section--projects" id="projects">
+    <div class="container container--wide">
+      <div class="section__head" data-animate>
+        <span class="section__tag">PROJECTS</span>
+        <h2 class="section__title">共建<span class="text-orange">项目</span></h2>
+        <p class="section__sub">同城共创 · 抱团落地 · 点击卡片了解详情</p>
+      </div>
+
+      <div class="projects-filter" id="projectsFilter">
+        <button class="projects-filter__btn active" data-filter="all">全部项目</button>
+        <button class="projects-filter__btn" data-filter="promotion">推广阶段</button>
+        <button class="projects-filter__btn" data-filter="pre">初期预热</button>
+        <button class="projects-filter__btn" data-filter="reserved">预留点位</button>
+      </div>
+
+      <div class="projects-grid" id="projectsGrid" data-animate>
+        <!-- 项目卡片由 JS 动态渲染 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 共建规则（时间线动画）===== -->
+  <section class="section section--rules" id="rules">
+    <div class="container">
+      <div class="section__head" data-animate>
+        <span class="section__tag section__tag--light">RULES</span>
+        <h2 class="section__title section__title--light">共建<span class="text-orange">规则</span></h2>
+        <p class="section__sub section__sub--light">透明 · 公平 · 共创</p>
+      </div>
+
+      <div class="timeline" data-animate>
+        <div class="tl-item">
+          <div class="tl-node">
+            <div class="tl-inner">
+              <span class="tl-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+          </div>
+          <div class="tl-content">
+            <span class="tl-step">STEP 01</span>
+            <h3>自主提交</h3>
+            <p>提交你的 AI 创业点子、商业项目或定制开发需求</p>
+          </div>
+          <div class="tl-illustration">
+            <svg viewBox="0 0 80 60" fill="none">
+              <rect x="24" y="6" width="38" height="26" rx="4" stroke="rgba(255,107,53,0.18)" stroke-width="1.5" fill="rgba(255,107,53,0.04)"/>
+              <path d="M24 20h38" stroke="rgba(255,107,53,0.1)" stroke-width="1"/>
+              <circle cx="34" cy="14" r="3" fill="rgba(255,107,53,0.2)"/>
+              <circle cx="42" cy="14" r="3" fill="rgba(255,107,53,0.2)"/>
+              <path d="M28 28l6-6M34 28l-6-6" stroke="rgba(255,107,53,0.15)" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M43 42l28-12" stroke="rgba(255,107,53,0.12)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="43" cy="44" r="5" stroke="rgba(255,107,53,0.2)" stroke-width="1.3" fill="rgba(255,107,53,0.04)"/>
+              <path d="M41 44l2 2 3-3" stroke="rgba(255,107,53,0.25)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-node">
+            <div class="tl-inner">
+              <span class="tl-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 8-8M17 21H7a4 4 0 01-4-4V7a4 4 0 014-4h10a4 4 0 014 4v10a4 4 0 01-4 4z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+          </div>
+          <div class="tl-content">
+            <span class="tl-step">STEP 02</span>
+            <h3>评估立项</h3>
+            <p>统一进行可行性审核，筛选优质项目立项孵化</p>
+          </div>
+          <div class="tl-illustration">
+            <svg viewBox="0 0 80 60" fill="none">
+              <rect x="26" y="6" width="36" height="28" rx="3" stroke="rgba(255,107,53,0.15)" stroke-width="1.5" fill="rgba(255,107,53,0.04)"/>
+              <line x1="26" y1="16" x2="62" y2="16" stroke="rgba(255,107,53,0.1)" stroke-width="1.2"/>
+              <circle cx="34" cy="11" r="2" fill="rgba(255,107,53,0.25)"/>
+              <polyline points="31,24 35,28 43,20" stroke="rgba(255,107,53,0.25)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="31" y1="34" x2="51" y2="34" stroke="rgba(255,107,53,0.12)" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="40" cy="46" r="8" stroke="rgba(255,107,53,0.15)" stroke-width="1.3" fill="rgba(255,107,53,0.04)"/>
+              <path d="M38 46l2 2 4-4" stroke="rgba(255,107,53,0.3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-node">
+            <div class="tl-inner">
+              <span class="tl-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+          </div>
+          <div class="tl-content">
+            <span class="tl-step">STEP 03</span>
+            <h3>全员共建</h3>
+            <p>依托 AI 技术全员协作，落地软件开发、商业赋能、流量变现</p>
+          </div>
+          <div class="tl-illustration">
+            <svg viewBox="0 0 80 60" fill="none">
+              <circle cx="24" cy="16" r="5.5" stroke="rgba(255,107,53,0.15)" stroke-width="1.8" fill="rgba(255,107,53,0.04)"/>
+              <circle cx="54" cy="14" r="5" stroke="rgba(255,107,53,0.15)" stroke-width="1.8" fill="rgba(255,107,53,0.04)"/>
+              <circle cx="38" cy="38" r="6" stroke="rgba(255,107,53,0.2)" stroke-width="1.8" fill="rgba(255,107,53,0.04)"/>
+              <path d="M29 19l6 15M50 17l-9 14" stroke="rgba(255,107,53,0.12)" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="68" cy="32" r="5" stroke="rgba(255,107,53,0.15)" stroke-width="1.5" fill="rgba(255,107,53,0.04)"/>
+              <path d="M55 28l9 2" stroke="rgba(255,107,53,0.1)" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M22 36l12 0" stroke="rgba(255,107,53,0.1)" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-node">
+            <div class="tl-inner tl-inner--final">
+              <span class="tl-icon">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06A2 2 0 1117.28 19l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06A2 2 0 113.28 15l.06.06A1.65 1.65 0 002.07 15a1.65 1.65 0 00-1 1.51V17a2 2 0 114 0v-.09A1.65 1.65 0 005 15a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0011 19.4V21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </div>
+          </div>
+          <div class="tl-content">
+            <span class="tl-step">STEP 04</span>
+            <h3>协作共赢</h3>
+            <p>学习、协作、拓展，共同壮大同城 AI 商圈生态</p>
+          </div>
+          <div class="tl-illustration">
+            <svg viewBox="0 0 80 60" fill="none">
+              <circle cx="40" cy="30" r="7" stroke="rgba(255,107,53,0.2)" stroke-width="1.5" fill="rgba(255,107,53,0.06)"/>
+              <circle cx="16" cy="14" r="5" stroke="rgba(255,107,53,0.1)" stroke-width="1.2" fill="rgba(255,107,53,0.03)"/>
+              <circle cx="64" cy="14" r="5" stroke="rgba(255,107,53,0.1)" stroke-width="1.2" fill="rgba(255,107,53,0.03)"/>
+              <circle cx="16" cy="46" r="5" stroke="rgba(255,107,53,0.1)" stroke-width="1.2" fill="rgba(255,107,53,0.03)"/>
+              <circle cx="64" cy="46" r="5" stroke="rgba(255,107,53,0.1)" stroke-width="1.2" fill="rgba(255,107,53,0.03)"/>
+              <path d="M21 18l14 8M59 18l-14 8M21 42l14-8M59 42l-14-8" stroke="rgba(255,107,53,0.1)" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 核心服务（Bento网格）===== -->
+  <section class="section section--services" id="services">
+    <div class="container">
+      <div class="section__head" data-animate>
+        <span class="section__tag">SERVICES</span>
+        <h2 class="section__title">七项服务<span class="text-orange">全链路</span></h2>
+        <p class="section__sub">从技能到落地，一站式赋能</p>
+      </div>
+
+      <div class="bento-grid" data-animate>
+        <!-- 大卡片 - 核心服务 -->
+        <div class="bento bento--lg">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><path d="M20 4l16 8v12c0 10-8 18-16 20-8-2-16-10-16-20V12L20 4z" stroke="currentColor" stroke-width="2"/><path d="M15 20l4 4 8-8" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="bento__name">AI 技能培训教学</span>
+          <span class="bento__desc">从零基础到实战应用，手把手教你用 AI 提效</span>
+        </div>
+
+        <div class="bento">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><rect x="5" y="8" width="30" height="22" rx="3" stroke="currentColor" stroke-width="2"/><path d="M5 14h30M11 4v8M29 4v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <span class="bento__name">AI 商业物料定制</span>
+        </div>
+
+        <div class="bento">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><polyline points="14 12 8 18 14 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="26 12 32 18 26 24" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="23" y1="8" x2="17" y2="28" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          </div>
+          <span class="bento__name">定制 AI 软件开发</span>
+        </div>
+
+        <div class="bento">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><path d="M20 4a10 10 0 00-10 10c0 6 10 18 10 18s10-12 10-18A10 10 0 0020 4z" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="14" r="3.5" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <span class="bento__name">同城商业 AI 赋能</span>
+        </div>
+
+        <div class="bento bento--highlight">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><path d="M20 4v4M20 32v4M4 20h4M32 20h4M7.86 7.86l2.83 2.83M29.31 29.31l2.83 2.83M7.86 32.14l2.83-2.83M29.31 10.69l2.83-2.83" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="20" r="4" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <span class="bento__name">创业项目孵化</span>
+          <span class="bento__desc">好点子 → 好产品 → 好生意</span>
+        </div>
+
+        <div class="bento">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="15" cy="12" r="5" stroke="currentColor" stroke-width="2"/><circle cx="28" cy="13" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 34c0-4 3.5-7 8-7s8 3 8 7M22 34c0-3 2-5.5 5-5.5S32 31 32 34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <span class="bento__name">社群资源对接</span>
+        </div>
+
+        <div class="bento bento--wide">
+          <div class="bento__icon">
+            <svg viewBox="0 0 40 40" fill="none"><rect x="4" y="8" width="32" height="24" rx="3" stroke="currentColor" stroke-width="2"/><path d="M4 14h32M12 5v6M28 5v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <span class="bento__name">线下沙龙落地</span>
+          <span class="bento__desc">面对面交流，真实可感的成长体验</span>
+        </div>
+
+        <div class="bento bento--stat">
+          <span class="bento__stat-num">20场</span>
+          <span class="bento__stat-label">线上直播</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 实战案例 ===== -->
+  <section class="section section--cases" id="cases">
+    <div class="container container--wide">
+      <div class="section__head" data-animate>
+        <span class="section__tag">CASES</span>
+        <h2 class="section__title">真实案例<span class="text-orange">看得见</span></h2>
+        <p class="section__sub">来自商圈成员的真实赋能成果</p>
+      </div>
+
+      <div class="cases-grid" id="casesGrid" data-animate></div>
+    </div>
+  </section>
+
+  <!-- ===== 提交项目 ===== -->
+  <section class="section section--submit" id="submit">
+    <div class="container container--md">
+      <div class="section__head" data-animate>
+        <span class="section__tag">SUBMIT</span>
+        <h2 class="section__title">提交你的<span class="text-orange">项目点子</span></h2>
+        <p class="section__sub">有好想法？提交给商圈评估，审核通过后即可立项孵化</p>
+      </div>
+
+      <form class="submit-form" id="submitForm" data-animate>
+        <div class="submit-form__row">
+          <div class="submit-form__field"><input type="text" class="submit-input" id="submitName" placeholder="你的称呼" required></div>
+          <div class="submit-form__field"><input type="text" class="submit-input" id="submitContact" placeholder="联系方式（微信/手机）" required></div>
+        </div>
+        <div class="submit-form__field"><input type="text" class="submit-input" id="submitTitle" placeholder="项目名称" required></div>
+        <div class="submit-form__field"><textarea class="submit-input submit-input--area" id="submitDesc" placeholder="请描述你的项目想法，包括目标用户、核心价值、当前阶段等..." rows="4" required></textarea></div>
+        <div class="submit-form__field">
+          <label class="submit-file">
+            <input type="file" class="submit-file__input" id="submitFiles" accept="image/*,.pdf,.doc,.docx,.txt" multiple>
+            <span class="submit-file__btn">上传附件（图片/文档）</span>
+            <span class="submit-file__hint">可选，支持图片、PDF、Word、TXT，多选</span>
+          </label>
+          <div class="submit-file__preview" id="submitFilePreview"></div>
+        </div>
+        <div class="submit-form__footer">
+          <p class="submit-form__hint">提交后商圈管理员会尽快评估，审核通过后联系你</p>
+          <button type="submit" class="btn btn--primary">提交评估</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===== 常见问题 FAQ ===== -->
+  <section class="section section--faq" id="faq">
+    <div class="container container--md">
+      <div class="section__head" data-animate>
+        <span class="section__tag">FAQ</span>
+        <h2 class="section__title">常见<span class="text-orange">问题</span></h2>
+        <p class="section__sub">入圈前你可能想知道的事</p>
+      </div>
+
+      <div class="faq-grid" data-animate>
+        <details class="faq-item">
+          <summary class="faq-header">
+            <span class="faq-q">加入商圈需要付费吗？</span>
+            <span class="faq-arrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </summary>
+          <div class="faq-body">完全免费。创客OPC · AI同城共建商圈坚持「纯免费、纯共创」原则，入圈不收取任何费用。</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-header">
+            <span class="faq-q">我不是技术人员，可以加入吗？</span>
+            <span class="faq-arrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </summary>
+          <div class="faq-body">当然可以。商圈面向普通人、上班族、实体店主、创业者，无需深厚技术背景，有想法就能来。</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-header">
+            <span class="faq-q">如何实现我的 AI 小愿望？</span>
+            <span class="faq-arrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </summary>
+          <div class="faq-body">入圈后按规则提交需求，排队有序服务。每位成员可免费实现一个 AI 小愿望，如海报、PPT、单页或简易网站。</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-header">
+            <span class="faq-q">线下沙龙都在哪里举办？</span>
+            <span class="faq-arrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </summary>
+          <div class="faq-body">沙龙一般在同城核心商圈的共享空间或咖啡馆举办，具体地点会提前在群内通知，方便大家就近参与。</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-header">
+            <span class="faq-q">有好项目可以找商圈孵化吗？</span>
+            <span class="faq-arrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </summary>
+          <div class="faq-body">可以。你只需提交项目想法，经过可行性评估后即可立项，由商圈成员共同协作孵化落地。</div>
+        </details>
+
+        <details class="faq-item">
+          <summary class="faq-header">
+            <span class="faq-q">自助 AI 工具账号怎么获得？</span>
+            <span class="faq-arrow">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </summary>
+          <div class="faq-body">入圈后管理员会统一提供自助平台账号入口，支持独立充值、独立操作，按需生成各类商业物料。</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 加入方式 CTA ===== -->
+  <section class="section section--join" id="join">
+    <div class="container">
+      <div class="cta-wrap" data-animate>
+        <div class="cta-content">
+          <span class="cta-tag">JOIN NOW</span>
+          <h2 class="cta-title">
+            扫码添加创始人<br>
+            <span class="text-orange">备注「创客OPC共建」</span>
+          </h2>
+          <p class="cta-desc">免费进圈，解锁全部共创权益</p>
+          <ul class="cta-checklist">
+            <li>
+              <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M6 10l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>免费进圈 · 无任何门槛</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M6 10l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>立享四大专属福利</span>
+            </li>
+            <li>
+              <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M6 10l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span>对接同城人脉与项目</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="cta-qr-area">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 页脚 ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <svg viewBox="0 0 40 40" fill="none" class="footer__logo-svg">
+            <circle cx="20" cy="20" r="18" stroke="url(#footerLogoGradient)" stroke-width="2.5" stroke-dasharray="4 3"/>
+            <circle cx="20" cy="20" r="5" fill="url(#footerLogoGradient)"/>
+            <circle cx="20" cy="7" r="3.5" fill="#FF6B35"/>
+            <circle cx="30.5" cy="25" r="3.5" fill="#FF8C42"/>
+            <circle cx="9.5" cy="25" r="3.5" fill="#FFB347"/>
+            <path d="M20 13v7M24 23l5.5 3M15.5 23l-5.5 3" stroke="url(#footerLogoGradient)" stroke-width="2" stroke-linecap="round"/>
+            <defs>
+              <linearGradient id="footerLogoGradient" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#FF6B35"/>
+                <stop offset="1" stop-color="#FF8C42"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span>创客OPC · AI同城共建商圈</span>
+        </div>
+        <div class="footer__links">
+          <a href="#about">关于商圈</a>
+          <a href="#projects">项目展示</a>
+          <a href="#rules">共建规则</a>
+          <a href="#cases">实战案例</a>
+          <a href="#services">核心服务</a>
+          <a href="#submit">提交点子</a>
+          <a href="#faq">常见问题</a>
+          <a href="#join">立即加入</a>
+        </div>
+      </div>
+      <div class="footer__divider"></div>
+      <p class="footer__copy">&copy; 2026 创客OPC · AI同城共建商圈 · <span class="footer__tagline">一个项目 众人共创<button class="admin-trigger" id="adminTrigger" aria-label="管理入口" title="项目管理"></button></span> · <span id="busuanzi_value_site_pv">0</span> 次浏览</p>
+    </div>
+  </footer>
+
+  <!-- ===== 移动端底部固定CTA ===== -->
+  <div class="fixed-cta" id="fixedCta">
+    <span class="fixed-cta__text"><strong>免费进圈</strong> · 解锁全部权益</span>
+    <a href="#join" class="fixed-cta__btn">立即加入</a>
+  </div>
+
+  <!-- ===== 返回顶部 ===== -->
+  <button class="backtop" id="backtop" aria-label="返回顶部">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V5M6 11l6-6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+
+  <!-- 访问统计 -->
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <!-- 浏览量显示：在页脚版权信息中添加 <span id="busuanzi_value_site_pv"> </span> 次浏览 -->
+
+  <script src="js/main.js"></script>
+</body>
+</html>

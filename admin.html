@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>创客OPC · 管理后台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0D0D0D;--card:#1A1A1A;--accent:#FF6B35;--accent-hover:#e85d2a;--text:#FFFFFF;--text-secondary:#A0A0A0;--border:#2A2A2A;--success:#22c55e;--danger:#ef4444;--warning:#f59e0b}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Login Overlay */
+.login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;transition:opacity .4s,visibility .4s}
+.login-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:420px;margin:20px}
+.login-card h1{font-size:28px;font-weight:800;margin-bottom:4px}
+.login-card p{color:var(--text-secondary);font-size:14px;margin-bottom:32px}
+.login-card .logo-accent{color:var(--accent)}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:#0D0D0D;border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;border:none;cursor:pointer;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-hover);transform:translateY(-1px)}
+.btn-secondary{background:var(--border);color:var(--text)}
+.btn-secondary:hover{background:#3A3A3A}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{background:#16a34a}
+.btn-icon{background:transparent;border:1px solid var(--border);color:var(--text-secondary);padding:8px;border-radius:8px}
+.btn-icon:hover{background:var(--border);color:var(--text)}
+.btn-sm{padding:8px 16px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Admin Layout */
+.admin-layout{display:none;min-height:100vh;flex-direction:column}
+.admin-layout.active{display:flex}
+.admin-header{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+.admin-header h2{font-size:20px;font-weight:700}
+.admin-header h2 span{color:var(--accent)}
+.admin-header .header-actions{display:flex;align-items:center;gap:12px}
+.admin-main{flex:1;padding:24px 32px;max-width:1200px;width:100%;margin:0 auto}
+
+/* Tabs */
+.tab-nav{display:flex;gap:4px;background:var(--card);border-radius:12px;padding:4px;margin-bottom:28px;overflow-x:auto}
+.tab-btn{flex-shrink:0;padding:10px 24px;border:none;background:transparent;color:var(--text-secondary);font-size:14px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap}
+.tab-btn:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.tab-btn.active{background:var(--accent);color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.toolbar h3{font-size:18px;font-weight:700}
+.search-input{background:#0D0D0D;border:1px solid var(--border);border-radius:10px;padding:10px 16px;color:var(--text);font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;min-width:240px}
+.search-input:focus{outline:none;border-color:var(--accent)}
+
+/* Table */
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:14px 16px;background:var(--card);color:var(--text-secondary);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:14px 16px;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* Status Badge */
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600}
+.badge-active{background:rgba(34,197,94,.15);color:var(--success)}
+.badge-pending{background:rgba(245,158,11,.15);color:var(--warning)}
+.badge-inactive{background:rgba(239,68,68,.15);color:var(--danger)}
+.actions-cell{display:flex;gap:6px;flex-wrap:wrap}
+.sortable-row{transition:opacity .2s}
+.sortable-row.dragging{opacity:.4}
+.sortable-row.drag-over{border-bottom:2px solid var(--accent)}
+.drag-handle{color:var(--text-secondary)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;visibility:hidden;transition:all .3s;padding:20px}
+.modal-overlay.active{opacity:1;visibility:visible}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:32px;transform:scale(.95);transition:transform .3s}
+.modal-overlay.active .modal{transform:scale(1)}
+.modal h3{font-size:20px;font-weight:700;margin-bottom:24px}
+.modal .form-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:28px}
+.modal__header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal__header h3{margin-bottom:0}
+.modal__close{background:none;border:none;color:var(--text-secondary);font-size:24px;cursor:pointer;padding:0 4px;line-height:1;transition:color .2s}
+.modal__close:hover{color:var(--text)}
+.modal__body{margin-bottom:20px}
+.modal__footer{display:flex;gap:12px;justify-content:flex-end}
+
+/* Toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:14px 20px;border-radius:10px;font-size:14px;font-weight:600;color:#fff;animation:slideIn .3s ease;min-width:280px;max-width:400px}
+.toast-success{background:var(--success)}
+.toast-error{background:var(--danger)}
+.toast-info{background:var(--accent)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Submission Cards */
+.submissions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.sub-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .2s}
+.sub-card:hover{border-color:#3A3A3A}
+.sub-card h4{font-size:16px;font-weight:700;margin-bottom:4px}
+.sub-card .sub-meta{color:var(--text-secondary);font-size:13px;margin-bottom:8px}
+.sub-card .sub-desc{color:var(--text);font-size:14px;margin-bottom:12px;line-height:1.5}
+.sub-card .sub-contact{color:var(--accent);font-size:13px;margin-bottom:12px}
+.sub-card .sub-actions{display:flex;gap:8px}
+.sub-card .sub-files{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.sub-card .sub-file-img{width:60px;height:60px;border-radius:8px;overflow:hidden;border:1px solid var(--border);transition:transform .2s}
+.sub-card .sub-file-img:hover{transform:scale(1.08)}
+.sub-card .sub-file-img img{width:100%;height:100%;object-fit:cover}
+.sub-card .sub-file-doc{font-size:13px;color:var(--accent);text-decoration:none;padding:6px 12px;border:1px solid var(--border);border-radius:8px;display:inline-flex;align-items:center;gap:4px;transition:background .2s}
+.sub-card .sub-file-doc:hover{background:var(--border)}
+
+/* FAQ Settings */
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:768px){.faq-grid{grid-template-columns:1fr}}
+.faq-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+.faq-card h4{font-size:16px;font-weight:700;margin-bottom:16px}
+.upload-area{position:relative;background:#0D0D0D;border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.upload-area:hover{border-color:var(--accent);background:rgba(255,107,53,.05)}
+.upload-area input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.upload-area .upload-icon{font-size:32px;margin-bottom:8px;opacity:.5}
+.upload-area .upload-text{color:var(--text-secondary);font-size:13px}
+.upload-area img{max-width:100%;max-height:160px;border-radius:6px}
+.faq-save{display:flex;justify-content:flex-end;margin-top:24px}
+
+/* Empty State */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-secondary)}
+.empty-state .empty-icon{font-size:48px;margin-bottom:12px;opacity:.5}
+.empty-state p{font-size:15px}
+
+/* Loading Spinner */
+.spinner{width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-center{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--text-secondary);gap:12px;font-size:14px}
+
+/* Error State */
+.error-state{text-align:center;padding:32px;color:var(--danger);font-size:14px}
+.error-state .retry-btn{margin-top:12px}
+
+/* Responsive */
+@media(max-width:768px){
+.admin-header{padding:12px 16px}
+.admin-main{padding:16px}
+.login-card{padding:32px 24px}
+.submissions-grid{grid-template-columns:1fr}
+.tab-btn{padding:8px 16px;font-size:13px}
+.modal{padding:24px}
+}
+</style>
+</head>
+<body>
+
+<!-- Login Overlay -->
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-card">
+    <h1>创客<span class="logo-accent">OPC</span></h1>
+    <p>管理后台 · 请输入密码登录</p>
+    <div id="loginError" style="background:rgba(239,68,68,.15);color:var(--danger);padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:20px;display:none"></div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="loginPassword">密码</label>
+        <input type="password" id="loginPassword" placeholder="请输入管理密码" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center;padding:14px;font-size:16px">登录</button>
+    </form>
+  </div>
+</div>
+
+<!-- Admin Layout -->
+<div class="admin-layout" id="adminLayout">
+  <header class="admin-header">
+    <h2>创客<span>OPC</span> · 管理后台</h2>
+    <div class="header-actions">
+      <span style="font-size:13px;color:var(--text-secondary)" id="statusText">已登录</span>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">退出登录</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="projects" onclick="switchTab('projects')">项目管理</button>
+      <button class="tab-btn" data-tab="submissions" onclick="switchTab('submissions')">提交审核</button>
+      <button class="tab-btn" data-tab="faq" onclick="switchTab('faq')">FAQ设置</button>
+      <button class="tab-btn" data-tab="cases" onclick="switchTab('cases')">案例管理</button>
+    </div>
+
+    <!-- Tab 1: 项目管理 -->
+    <div class="tab-content active" id="tab-projects">
+      <div class="toolbar">
+        <h3>项目列表</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input type="text" class="search-input" id="projectSearch" placeholder="搜索项目..." oninput="renderProjects()">
+          <button class="btn btn-primary btn-sm" onclick="openProjectModal()">+ 添加项目</button>
+        </div>
+      </div>
+      <div id="projectsContent">
+        <div class="loading-center"><span class="spinner"></span> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- Tab 2: 提交审核 -->
+    <div class="tab-content" id="tab-submissions">
+      <div class="toolbar">
+        <h3>提交审核</h3>
+      </div>
+      <div id="submissionsContent">
+        <div class="loading-center"><span class="spinner"></span> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- Tab 3: FAQ设置 -->
+    <div class="tab-content" id="tab-faq">
+      <h3 style="font-size:18px;font-weight:700;margin-bottom:20px">FAQ 二维码设置</h3>
+      <div id="faqContent">
+        <div class="loading-center"><span class="spinner"></span> 加载中...</div>
+      </div>
+    </div>
+
+    <!-- Tab 4: 案例管理 -->
+    <div class="tab-content" id="tab-cases">
+      <div class="toolbar">
+        <h3>案例列表</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="openCaseModal()">+ 添加案例</button>
+        </div>
+      </div>
+      <div id="casesContent"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">添加项目</h3>
+    <form id="projectForm">
+      <input type="hidden" id="projectId">
+      <div class="form-group">
+        <label for="projName">项目名称</label>
+        <input type="text" id="projName" required>
+      </div>
+      <div class="form-group">
+        <label for="projDesc">项目描述</label>
+        <textarea id="projDesc" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="projLink">链接</label>
+        <input type="url" id="projLink" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label for="projContact">联系方式</label>
+        <input type="text" id="projContact">
+      </div>
+      <div class="form-group">
+        <label for="projQrcode">二维码图1</label>
+        <input type="file" id="projQrcode" accept="image/*" onchange="previewFile(this,'qrcodePreview')">
+        <img id="qrcodePreview" style="max-width:120px;margin-top:8px;border-radius:6px;display:none">
+      </div>
+      <div class="form-group">
+        <label for="projQrcode2">二维码图2</label>
+        <input type="file" id="projQrcode2" accept="image/*" onchange="previewFile(this,'qrcode2Preview')">
+        <img id="qrcode2Preview" style="max-width:120px;margin-top:8px;border-radius:6px;display:none">
+      </div>
+      <div class="form-group">
+        <label for="projStatus">状态</label>
+        <select id="projStatus">
+          <option value="active">启用</option>
+          <option value="pending">审核中</option>
+          <option value="inactive">禁用</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+        <button type="submit" class="btn btn-primary" id="projectSubmitBtn">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Case Modal -->
+<div class="modal-overlay" id="caseModal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal__header">
+      <h3 id="caseModalTitle">添加案例</h3>
+      <button class="modal__close" onclick="closeCaseModal()">×</button>
+    </div>
+    <div class="modal__body" style="display:flex;flex-direction:column;gap:14px">
+      <input type="text" id="caseTag" class="search-input" placeholder="标签（如：实体商家）">
+      <input type="text" id="caseTitle" class="search-input" placeholder="案例标题 *">
+      <textarea id="caseDesc" class="search-input" rows="3" placeholder="案例描述" style="resize:vertical"></textarea>
+      <input type="text" id="caseResult" class="search-input" placeholder="成果文案（如：获客成本降低 60%）">
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn-secondary btn-sm" onclick="closeCaseModal()">取消</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCase()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const API_BASE = 'http://localhost:3001';
+let TOKEN = localStorage.getItem('admin_token') || '';
+
+// --- Auth ---
+async function api(path, options = {}) {
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  if (TOKEN) headers['Authorization'] = `Bearer ${TOKEN}`;
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const text = await res.text();
+  try {
+    return { ok: res.ok, status: res.status, data: text ? JSON.parse(text) : null };
+  } catch {
+    return { ok: res.ok, status: res.status, data: text };
+  }
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const password = document.getElementById('loginPassword').value.trim();
+  const btn = document.getElementById('loginBtn');
+  const errorEl = document.getElementById('loginError');
+  if (!password) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 登录中...';
+  errorEl.style.display = 'none';
+
+  try {
+    const res = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ password }) });
+    if (res.ok && res.data && res.data.token) {
+      TOKEN = res.data.token;
+      localStorage.setItem('admin_token', TOKEN);
+      showAdmin();
+      toast('登录成功', 'success');
+    } else {
+      errorEl.textContent = '密码错误，请重试';
+      errorEl.style.display = 'block';
+    }
+  } catch (err) {
+    errorEl.textContent = '无法连接到服务器 (http://localhost:3001)';
+    errorEl.style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.innerHTML = '登录';
+});
+
+function logout() {
+  TOKEN = '';
+  localStorage.removeItem('admin_token');
+  document.getElementById('adminLayout').classList.remove('active');
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+function showAdmin() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  document.getElementById('adminLayout').classList.add('active');
+  loadAll();
+}
+
+// Check stored token on load
+(async function init() {
+  if (TOKEN) {
+    try {
+      const res = await api('/api/projects');
+      if (res.ok) { showAdmin(); return; }
+    } catch {}
+    TOKEN = '';
+    localStorage.removeItem('admin_token');
+  }
+})();
+
+// --- Tabs ---
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${name}`));
+  if (name === 'submissions' && !document.getElementById('submissionsContent').querySelector('.sub-card,.empty-state,.error-state')) loadSubmissions();
+  if (name === 'faq' && !document.querySelector('.faq-grid')) loadFaq();
+  if (name === 'cases') loadCases();
+}
+
+function loadAll() { loadProjects(); loadSubmissions(); loadFaq(); loadCases(); }
+
+// --- Toast ---
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// --- Modal ---
+function openModal(title) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalOverlay').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.getElementById('projectForm').reset();
+  document.getElementById('projectId').value = '';
+  document.getElementById('qrcodePreview').style.display = 'none';
+  document.getElementById('qrcode2Preview').style.display = 'none';
+}
+// 点击弹窗外部不再关闭
+
+// --- File preview ---
+function previewFile(input, previewId) {
+  const img = document.getElementById(previewId);
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => { img.src = e.target.result; img.style.display = 'block'; };
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    img.style.display = 'none';
+  }
+}
+
+// ==================== Projects ====================
+let projects = [];
+
+function statusBadge(status) {
+  const map = { active: '<span class="badge badge-active">已启用</span>', pending: '<span class="badge badge-pending">审核中</span>', inactive: '<span class="badge badge-inactive">已禁用</span>' };
+  return map[status] || '<span class="badge badge-pending">审核中</span>';
+}
+
+async function saveOrder() {
+  const rows = document.querySelectorAll('#projectsTable tbody tr');
+  const ids = Array.from(rows).map(r => r.dataset.id).filter(Boolean);
+  try {
+    const res = await api('/api/projects/reorder', { method: 'POST', body: JSON.stringify({ ids }) });
+    if (!res.ok) throw new Error('保存排序失败');
+    toast('排序已保存', 'success');
+    document.getElementById('saveOrderBtn').style.display = 'none';
+    loadProjects();
+  } catch (err) {
+    toast('保存排序失败: ' + err.message, 'error');
+  }
+}
+
+async function loadProjects() {
+  const el = document.getElementById('projectsContent');
+  el.innerHTML = '<div class="loading-center"><span class="spinner"></span> 加载中...</div>';
+  try {
+    const res = await api('/api/projects');
+    if (!res.ok) throw new Error('加载失败');
+    projects = Array.isArray(res.data) ? res.data : [];
+    renderProjects();
+  } catch (err) {
+    el.innerHTML = `<div class="error-state">加载失败: ${err.message}<br><button class="btn btn-secondary btn-sm retry-btn" onclick="loadProjects()">重试</button></div>`;
+  }
+}
+
+function renderProjects() {
+  const el = document.getElementById('projectsContent');
+  const q = document.getElementById('projectSearch').value.toLowerCase().trim();
+  let filtered = projects;
+  if (q) filtered = projects.filter(p => (p.name || '').toLowerCase().includes(q));
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>${q ? '没有匹配的项目' : '暂无项目，点击右上角添加'}</p></div>`;
+    return;
+  }
+
+  let orderChanged = false;
+  el.innerHTML = `<div class="table-wrap"><table id="projectsTable">
+    <thead><tr><th style="width:32px"></th><th>名称</th><th>状态</th><th style="text-align:right">操作</th></tr></thead>
+    <tbody>${filtered.map(p => '<tr draggable="true" data-id="' + esc(p.id) + '" class="sortable-row">' +
+      '<td class="drag-handle" style="cursor:grab;text-align:center;font-size:18px;user-select:none">⠿</td>' +
+      '<td style="font-weight:600">' + esc(p.name) + '</td>' +
+      '<td>' + statusBadge(p.status) + '</td>' +
+      '<td style="text-align:right"><div class="actions-cell" style="justify-content:flex-end">' +
+        '<button class="btn btn-secondary btn-sm" onclick="editProject(\'' + esc(p.id) + '\')">编辑</button>' +
+        '<button class="btn btn-danger btn-sm" onclick="deleteProject(\'' + esc(p.id) + '\')">删除</button>' +
+      '</div></td>' +
+    '</tr>').join('')}</tbody></table></div>`;
+
+  // 拖拽排序事件绑定
+  const tbody = el.querySelector('tbody');
+  let dragSrcId = null;
+
+  tbody.addEventListener('dragstart', (e) => {
+    const row = e.target.closest('tr');
+    if (!row) return;
+    dragSrcId = row.dataset.id;
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  tbody.addEventListener('dragend', (e) => {
+    e.target.closest('tr')?.classList.remove('dragging');
+    document.querySelectorAll('.sortable-row.drag-over').forEach(r => r.classList.remove('drag-over'));
+  });
+
+  tbody.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const target = e.target.closest('tr');
+    if (!target || target.dataset.id === dragSrcId) return;
+    document.querySelectorAll('.sortable-row.drag-over').forEach(r => r.classList.remove('drag-over'));
+    target.classList.add('drag-over');
+  });
+
+  tbody.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const target = e.target.closest('tr');
+    if (!target || !dragSrcId || target.dataset.id === dragSrcId) return;
+    const srcRow = tbody.querySelector(`tr[data-id="${dragSrcId}"]`);
+    if (!srcRow) return;
+    tbody.insertBefore(srcRow, target.nextSibling);
+    orderChanged = true;
+    document.getElementById('saveOrderBtn').style.display = 'inline-flex';
+  });
+
+  // 保存排序按钮
+  const existingBtn = document.getElementById('saveOrderBtn');
+  if (existingBtn) existingBtn.remove();
+  const btn = document.createElement('button');
+  btn.id = 'saveOrderBtn';
+  btn.className = 'btn btn-primary btn-sm';
+  btn.textContent = '保存排序';
+  btn.style.display = 'none';
+  btn.style.marginTop = '12px';
+  btn.onclick = saveOrder;
+  el.appendChild(btn);
+}
+
+async function deleteProject(id) {
+  if (!confirm('确定要删除此项目吗？')) return;
+  try {
+    const res = await api(`/api/projects/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('删除失败');
+    toast('项目已删除', 'success');
+    loadProjects();
+  } catch (err) {
+    toast('删除失败: ' + err.message, 'error');
+  }
+}
+
+function editProject(id) {
+  const p = projects.find(x => x.id === id);
+  if (!p) return toast('项目不存在', 'error');
+  document.getElementById('projectId').value = p.id;
+  document.getElementById('projName').value = p.name || '';
+  document.getElementById('projDesc').value = p.desc || '';
+  document.getElementById('projLink').value = p.link || '';
+  document.getElementById('projContact').value = p.contact || '';
+  document.getElementById('projStatus').value = p.status || 'pending';
+  if (p.qrcode) {
+    document.getElementById('qrcodePreview').src = p.qrcode;
+    document.getElementById('qrcodePreview').style.display = 'block';
+  }
+  if (p.qrcode2) {
+    document.getElementById('qrcode2Preview').src = p.qrcode2;
+    document.getElementById('qrcode2Preview').style.display = 'block';
+  }
+  openModal('编辑项目');
+}
+
+function openProjectModal() {
+  document.getElementById('projectId').value = '';
+  document.getElementById('projectForm').reset();
+  document.getElementById('qrcodePreview').style.display = 'none';
+  document.getElementById('qrcode2Preview').style.display = 'none';
+  document.getElementById('projStatus').value = 'active';
+  openModal('添加项目');
+}
+
+document.getElementById('projectForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('projectId').value;
+  const body = {
+    name: document.getElementById('projName').value.trim(),
+    desc: document.getElementById('projDesc').value.trim(),
+    link: document.getElementById('projLink').value.trim(),
+    contact: document.getElementById('projContact').value.trim(),
+    status: document.getElementById('projStatus').value,
+  };
+  const qrcodeImg = document.getElementById('qrcodePreview');
+  const qrcode2Img = document.getElementById('qrcode2Preview');
+  if (qrcodeImg.style.display !== 'none' && qrcodeImg.src) body.qrcode = qrcodeImg.src;
+  if (qrcode2Img.style.display !== 'none' && qrcode2Img.src) body.qrcode2 = qrcode2Img.src;
+
+  if (!body.name) return toast('请输入项目名称', 'error');
+
+  const btn = document.getElementById('projectSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 保存中...';
+
+  try {
+    let res;
+    if (id) {
+      res = await api(`/api/projects/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+    } else {
+      res = await api('/api/projects', { method: 'POST', body: JSON.stringify(body) });
+    }
+    if (!res.ok) throw new Error(res.data?.message || '保存失败');
+    toast(id ? '项目已更新' : '项目已创建', 'success');
+    closeModal();
+    loadProjects();
+  } catch (err) {
+    toast('保存失败: ' + err.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '保存';
+});
+
+// ==================== Submissions ====================
+async function loadSubmissions() {
+  const el = document.getElementById('submissionsContent');
+  el.innerHTML = '<div class="loading-center"><span class="spinner"></span> 加载中...</div>';
+  try {
+    const res = await api('/api/submissions');
+    if (!res.ok) throw new Error('加载失败');
+    const list = Array.isArray(res.data) ? res.data : [];
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>暂无提交记录</p></div>';
+      return;
+    }
+    el.innerHTML = `<div class="submissions-grid">${list.map(s => `
+      <div class="sub-card">
+        <h4>${esc(s.title || '未命名')}</h4>
+        <div class="sub-meta">${esc(s.name || '')} · ${s.createdAt ? new Date(s.createdAt).toLocaleDateString('zh-CN') : ''}</div>
+        <div class="sub-contact">📧 ${esc(s.contact || '')}</div>
+        <div class="sub-desc">${esc(s.desc || '')}</div>
+        ${s.files && s.files.length ? `<div class="sub-files">${s.files.map(f => `
+          ${f.type && f.type.startsWith('image/')
+            ? `<a href="${esc(f.data)}" target="_blank" class="sub-file-img"><img src="${esc(f.data)}" alt="${esc(f.name)}" title="${esc(f.name)}"></a>`
+            : `<a href="${esc(f.data)}" download="${esc(f.name)}" class="sub-file-doc">📄 ${esc(f.name)}</a>`
+          }
+        `).join('')}</div>` : ''}
+        <div class="sub-actions">
+          <button class="btn btn-success btn-sm" onclick="approveSubmission('${esc(s.id)}')">✓ 通过并转为项目</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectSubmission('${esc(s.id)}')">✕ 拒绝</button>
+        </div>
+      </div>
+    `).join('')}</div>`;
+  } catch (err) {
+    el.innerHTML = `<div class="error-state">加载失败: ${err.message}<br><button class="btn btn-secondary btn-sm retry-btn" onclick="loadSubmissions()">重试</button></div>`;
+  }
+}
+
+async function approveSubmission(id) {
+  if (!confirm('确定通过此提交并转为项目？')) return;
+  try {
+    const res = await api(`/api/submissions/${id}/approve`, { method: 'POST' });
+    if (!res.ok) throw new Error('操作失败');
+    toast('已通过并转为项目', 'success');
+    loadSubmissions();
+    loadProjects();
+  } catch (err) {
+    toast('操作失败: ' + err.message, 'error');
+  }
+}
+
+async function rejectSubmission(id) {
+  if (!confirm('确定拒绝此提交？')) return;
+  try {
+    const res = await api(`/api/submissions/${id}/reject`, { method: 'POST' });
+    if (!res.ok) throw new Error('操作失败');
+    toast('已拒绝该提交', 'success');
+    loadSubmissions();
+  } catch (err) {
+    toast('操作失败: ' + err.message, 'error');
+  }
+}
+
+// ==================== FAQ ====================
+async function loadFaq() {
+  const el = document.getElementById('faqContent');
+  el.innerHTML = '<div class="loading-center"><span class="spinner"></span> 加载中...</div>';
+  try {
+    const res = await api('/api/faq-qr');
+    if (!res.ok) throw new Error('加载失败');
+    const data = res.data || {};
+    el.innerHTML = `
+      <form id="faqForm">
+        <div class="faq-grid">
+          <div class="faq-card">
+            <h4>社群入群码 (QR1)</h4>
+            <div class="upload-area" id="faqUpload1">
+              <input type="file" accept="image/*" onchange="faqPreview(this,'faqPreview1')">
+              <div class="upload-icon">🖼</div>
+              <div class="upload-text">点击上传二维码图片</div>
+              <img id="faqPreview1" style="max-width:160px;border-radius:6px;display:none">
+            </div>
+            <div class="form-group">
+              <label for="faqLabel1">标签文字</label>
+              <input type="text" id="faqLabel1" value="${esc(data.label1 || '')}">
+            </div>
+          </div>
+          <div class="faq-card">
+            <h4>创始人微信 (QR2)</h4>
+            <div class="upload-area" id="faqUpload2">
+              <input type="file" accept="image/*" onchange="faqPreview(this,'faqPreview2')">
+              <div class="upload-icon">🖼</div>
+              <div class="upload-text">点击上传二维码图片</div>
+              <img id="faqPreview2" style="max-width:160px;border-radius:6px;display:none">
+            </div>
+            <div class="form-group">
+              <label for="faqLabel2">标签文字</label>
+              <input type="text" id="faqLabel2" value="${esc(data.label2 || '')}">
+            </div>
+          </div>
+        </div>
+        <div class="faq-save">
+          <button type="submit" class="btn btn-primary" id="faqSaveBtn">保存设置</button>
+        </div>
+      </form>
+    `;
+    if (data.qr1) {
+      document.getElementById('faqPreview1').src = data.qr1;
+      document.getElementById('faqPreview1').style.display = 'block';
+      document.querySelector('#faqUpload1 .upload-text').style.display = 'none';
+      document.querySelector('#faqUpload1 .upload-icon').style.display = 'none';
+    }
+    if (data.qr2) {
+      document.getElementById('faqPreview2').src = data.qr2;
+      document.getElementById('faqPreview2').style.display = 'block';
+      document.querySelector('#faqUpload2 .upload-text').style.display = 'none';
+      document.querySelector('#faqUpload2 .upload-icon').style.display = 'none';
+    }
+    document.getElementById('faqForm').addEventListener('submit', saveFaq);
+  } catch (err) {
+    el.innerHTML = `<div class="error-state">加载失败: ${err.message}<br><button class="btn btn-secondary btn-sm retry-btn" onclick="loadFaq()">重试</button></div>`;
+  }
+}
+
+function faqPreview(input, previewId) {
+  const img = document.getElementById(previewId);
+  const area = input.closest('.upload-area');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.src = e.target.result;
+      img.style.display = 'block';
+      const txt = area.querySelector('.upload-text');
+      const icon = area.querySelector('.upload-icon');
+      if (txt) txt.style.display = 'none';
+      if (icon) icon.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  } else {
+    img.style.display = 'none';
+  }
+}
+
+async function saveFaq(e) {
+  e.preventDefault();
+  const btn = document.getElementById('faqSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 保存中...';
+
+  const fb1 = document.getElementById('faqPreview1');
+  const fb2 = document.getElementById('faqPreview2');
+
+  const body = {
+    label1: document.getElementById('faqLabel1').value.trim(),
+    label2: document.getElementById('faqLabel2').value.trim(),
+    qr1: fb1.style.display !== 'none' && fb1.src ? fb1.src : '',
+    qr2: fb2.style.display !== 'none' && fb2.src ? fb2.src : '',
+  };
+
+  try {
+    const res = await api('/api/faq-qr', { method: 'PUT', body: JSON.stringify(body) });
+    if (!res.ok) throw new Error('保存失败');
+    toast('FAQ 设置已保存', 'success');
+  } catch (err) {
+    toast('保存失败: ' + err.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '保存设置';
+}
+
+// ==================== Cases ====================
+let casesData = [];
+
+async function loadCases() {
+  casesData = [];
+  const content = document.getElementById('casesContent');
+  try {
+    const res = await fetch(API_BASE + '/api/cases');
+    casesData = await res.json();
+  } catch {}
+  renderCases();
+}
+
+function renderCases() {
+  const el = document.getElementById('casesContent');
+  if (!casesData.length) {
+    el.innerHTML = '<div class="empty-state">暂无案例</div>';
+    return;
+  }
+  el.innerHTML = casesData.map(c => `
+    <div class="sub-card" draggable="true" data-id="${esc(c.id)}" style="margin-bottom:12px">
+      <div class="sub-card__info" style="flex:1">
+        <strong style="font-size:16px;display:block;margin-bottom:4px">${esc(c.title)}</strong>
+        <span style="background:var(--accent);color:#fff;padding:2px 10px;border-radius:100px;font-size:12px;display:inline-block;margin-bottom:4px">${esc(c.tag)}</span>
+        <p style="font-size:13px;color:var(--text-secondary);margin:4px 0">${esc(c.description)}</p>
+        <p style="font-size:13px;color:var(--accent);margin:2px 0">⚡ ${esc(c.result)}</p>
+      </div>
+      <div class="sub-card__actions">
+        <button class="btn btn-sm btn-secondary" onclick="editCase('${esc(c.id)}')">编辑</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteCase('${esc(c.id)}')">删除</button>
+      </div>
+    </div>
+  `).join('');
+  enableCaseDrag();
+}
+
+function enableCaseDrag() {
+  let dragEl = null;
+  document.querySelectorAll('#casesContent .sub-card').forEach(card => {
+    card.addEventListener('dragstart', () => { dragEl = card; card.style.opacity = '0.4'; });
+    card.addEventListener('dragend', () => { card.style.opacity = '1'; dragEl = null; });
+    card.addEventListener('dragover', e => { e.preventDefault(); if (dragEl && dragEl !== card) card.parentNode.insertBefore(dragEl, card.nextSibling); });
+  });
+}
+
+function openCaseModal(data) {
+  document.getElementById('caseTag').value = data?.tag || '';
+  document.getElementById('caseTitle').value = data?.title || '';
+  document.getElementById('caseDesc').value = data?.description || '';
+  document.getElementById('caseResult').value = data?.result || '';
+  document.getElementById('caseModalTitle').textContent = data ? '编辑案例' : '添加案例';
+  document.getElementById('caseModal').dataset.editId = data?.id || '';
+  document.getElementById('caseModal').classList.add('active');
+}
+
+function closeCaseModal() {
+  document.getElementById('caseModal').classList.remove('active');
+  document.getElementById('caseModal').dataset.editId = '';
+}
+
+async function saveCase() {
+  const tag = document.getElementById('caseTag').value.trim();
+  const title = document.getElementById('caseTitle').value.trim();
+  const description = document.getElementById('caseDesc').value.trim();
+  const result = document.getElementById('caseResult').value.trim();
+  if (!title) return toast('请输入案例标题', 'error');
+
+  const editId = document.getElementById('caseModal').dataset.editId;
+  try {
+    const url = editId ? API_BASE + '/api/cases/' + editId : API_BASE + '/api/cases';
+    const method = editId ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+      body: JSON.stringify({ tag, title, description, result })
+    });
+    if (!res.ok) throw new Error('Save failed');
+    toast(editId ? '已更新' : '已添加', 'success');
+    closeCaseModal();
+    await loadCases();
+  } catch (e) {
+    toast('保存失败: ' + e.message, 'error');
+  }
+}
+
+async function deleteCase(id) {
+  if (!confirm('确定删除此案例？')) return;
+  try {
+    await fetch(API_BASE + '/api/cases/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + TOKEN } });
+    toast('已删除', 'success');
+    await loadCases();
+  } catch { toast('删除失败', 'error'); }
+}
+
+function editCase(id) {
+  const c = casesData.find(x => x.id === id);
+  if (c) openCaseModal(c);
+}
+
+// ==================== Utility ====================
+function esc(str) {
+  if (str == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>

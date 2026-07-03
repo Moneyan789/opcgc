@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0D0D0D">
+  <title>项目集市 · 创客OPC 共建商圈</title>
+  <meta name="description" content="创客OPC · AI同城共建商圈项目集市，汇聚同城AI共创项目">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ========== Design Token ========== */
+    :root {
+      --c-orange: #FF6B35;
+      --c-orange-light: #FF8F5A;
+      --c-orange-dark: #E55A1F;
+      --c-orange-glow: rgba(255, 107, 53, 0.35);
+      --c-orange-soft: rgba(255, 107, 53, 0.08);
+      --c-orange-border: rgba(255, 107, 53, 0.2);
+
+      --g-orange: linear-gradient(135deg, #FF6B35 0%, #FF8F5A 50%, #FFA726 100%);
+
+      --c-dark: #0D0D0D;
+      --c-dark-2: #141414;
+      --c-dark-3: #1A1A1A;
+      --c-dark-4: #222222;
+
+      --c-white: #FFFFFF;
+      --c-white-90: rgba(255,255,255,0.9);
+      --c-white-70: rgba(255,255,255,0.7);
+      --c-white-50: rgba(255,255,255,0.5);
+      --c-white-30: rgba(255,255,255,0.3);
+      --c-white-15: rgba(255,255,255,0.15);
+
+      --font: 'Plus Jakarta Sans', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+      --container: 1320px;
+      --r-sm: 12px;
+      --r-md: 18px;
+      --r-lg: 24px;
+      --r-xl: 32px;
+      --r-full: 9999px;
+
+      --shadow-glow: 0 8px 40px var(--c-orange-glow);
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--c-dark);
+      color: var(--c-white-90);
+      line-height: 1.65;
+      font-size: 17px;
+      font-weight: 400;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    ::selection {
+      background: var(--c-orange);
+      color: var(--c-white);
+    }
+
+    /* ========== Header ========== */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 13, 13, 0.88);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .header__inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--c-white);
+      letter-spacing: -0.02em;
+      transition: opacity 0.25s;
+    }
+    .header__brand:hover { opacity: 0.85; }
+
+    .header__brand-icon {
+      width: 28px;
+      height: 28px;
+      color: var(--c-orange);
+      flex-shrink: 0;
+    }
+
+    .header__brand-orange { color: var(--c-orange); }
+
+    .header__back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--c-white-50);
+      padding: 8px 18px;
+      border-radius: var(--r-full);
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.25s var(--ease-out-expo);
+    }
+    .header__back:hover {
+      color: var(--c-white);
+      border-color: var(--c-orange-border);
+      background: var(--c-orange-soft);
+    }
+    .header__back svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* ========== Hero ========== */
+    .market-hero {
+      text-align: center;
+      padding: 80px 24px 40px;
+      background: linear-gradient(165deg, #0D0D0D 0%, #120C08 30%, #1A0E08 60%, #0D0D0D 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .market-hero__bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,107,53,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,107,53,0.03) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+    }
+
+    .market-hero__content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .market-hero__tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--c-orange-light);
+      background: var(--c-orange-soft);
+      border: 1px solid var(--c-orange-border);
+      padding: 7px 20px;
+      border-radius: var(--r-full);
+      margin-bottom: 24px;
+      letter-spacing: 0.08em;
+    }
+    .market-hero__tag-dot {
+      width: 7px; height: 7px;
+      background: var(--c-orange);
+      border-radius: 50%;
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--c-orange-glow); }
+      50% { opacity: 0.6; box-shadow: 0 0 0 6px transparent; }
+    }
+
+    .market-hero__title {
+      font-size: clamp(2rem, 8vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--c-white);
+      margin-bottom: 12px;
+    }
+    .market-hero__title span { background: var(--g-orange); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    .market-hero__sub {
+      font-size: clamp(1rem, 3.5vw, 1.15rem);
+      color: var(--c-white-50);
+      line-height: 1.8;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .market-hero__count {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 20px;
+      font-size: 0.95rem;
+      color: var(--c-white-70);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 24px;
+      border-radius: var(--r-full);
+    }
+    .market-hero__count strong {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--c-orange);
+    }
+
+    /* ========== Grid Section ========== */
+    .market-main {
+      flex: 1;
+      padding: 40px 24px 60px;
+      max-width: var(--container);
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .market-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    /* ========== Empty State ========== */
+    .market-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 24px;
+    }
+    .market-empty__icon {
+      width: 64px; height: 64px;
+      color: var(--c-white-15);
+      margin: 0 auto 20px;
+    }
+    .market-empty__title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--c-white-50);
+      margin-bottom: 8px;
+    }
+    .market-empty__desc {
+      font-size: 0.95rem;
+      color: var(--c-white-30);
+    }
+
+    /* ========== Project Card ========== */
+    .project-card {
+      background: var(--c-dark-3);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--r-xl);
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.35s var(--ease-out-expo);
+      position: relative;
+      overflow: hidden;
+    }
+    .project-card:hover {
+      border-color: rgba(255,107,53,0.2);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+    }
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--g-orange);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.4s var(--ease-out-expo);
+    }
+    .project-card:hover::before { transform: scaleX(1); }
+
+    .project-card__status {
+      display: inline-flex;
+      align-self: flex-start;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--c-orange);
+      background: var(--c-orange-soft);
+      border: 1px solid var(--c-orange-border);
+      padding: 4px 12px;
+      border-radius: var(--r-full);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .project-card__status--pre {
+      color: #60A5FA;
+      background: rgba(96,165,250,0.1);
+      border-color: rgba(96,165,250,0.2);
+    }
+    .project-card__status--reserved {
+      color: var(--c-white-50);
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .project-card__name {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--c-white);
+      margin-bottom: 14px;
+      line-height: 1.25;
+    }
+
+    .project-card__desc {
+      font-size: 1rem;
+      color: var(--c-white-50);
+      line-height: 1.75;
+      margin-bottom: 24px;
+      flex: 1;
+    }
+
+    /* QR Codes */
+    .project-card__qr-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .project-card__qr {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .project-card__qr img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--c-white);
+      padding: 6px;
+    }
+    .project-card__qr span {
+      font-size: 0.75rem;
+      color: var(--c-white-40);
+    }
+    .project-card__qr--empty {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1.5px dashed rgba(255,255,255,0.1);
+      border-radius: var(--r-md);
+      padding: 16px;
+    }
+    .project-card__qr--empty svg {
+      width: 36px; height: 36px;
+      color: var(--c-white-20);
+    }
+    .project-card__qr--empty span {
+      font-size: 0.75rem;
+      color: var(--c-white-30);
+    }
+
+    /* Actions */
+    .project-card__actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .project-card__btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 12px 14px;
+      border-radius: var(--r-full);
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s var(--ease-out-expo);
+    }
+    .project-card__btn--primary {
+      color: var(--c-white);
+      background: var(--g-orange);
+    }
+    .project-card__btn--primary:hover {
+      filter: brightness(1.1);
+    }
+    .project-card__btn--secondary {
+      color: var(--c-white);
+      background: transparent;
+      border-color: var(--c-orange-border);
+    }
+    .project-card__btn--secondary:hover {
+      background: var(--c-orange);
+      border-color: var(--c-orange);
+    }
+
+    .project-card--reserved {
+      opacity: 0.85;
+    }
+    .project-card--reserved .project-card__actions {
+      display: none;
+    }
+
+    /* ========== Footer ========== */
+    .footer {
+      background: var(--c-dark-2);
+      padding: 2.5rem 0 2rem;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      margin-top: auto;
+    }
+    .footer__inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .footer__brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--c-white-90);
+    }
+    .footer__brand svg {
+      width: 24px; height: 24px;
+      color: var(--c-orange);
+    }
+    .footer__back-link {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--c-white-30);
+      padding: 8px 20px;
+      border-radius: var(--r-full);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.25s var(--ease-out-expo);
+    }
+    .footer__back-link:hover {
+      color: var(--c-orange);
+      border-color: var(--c-orange-border);
+      background: var(--c-orange-soft);
+    }
+    .footer__copy {
+      font-size: 0.8rem;
+      color: var(--c-white-15);
+      text-align: center;
+    }
+
+    /* ========== Responsive ========== */
+    @media (min-width: 640px) {
+      .market-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .market-hero { padding: 100px 28px 50px; }
+    }
+
+    @media (min-width: 960px) {
+      .market-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+      .market-hero { padding: 120px 28px 60px; }
+    }
+
+    @media (min-width: 1280px) {
+      .market-grid {
+        gap: 28px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="header">
+    <div class="header__inner">
+      <a href="index.html" class="header__brand">
+        <svg class="header__brand-icon" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="url(#hdrGrad)" stroke-width="2.5" stroke-dasharray="4 3"/>
+          <circle cx="20" cy="20" r="5" fill="url(#hdrGrad)"/>
+          <circle cx="20" cy="7" r="3.5" fill="#FF6B35"/>
+          <circle cx="30.5" cy="25" r="3.5" fill="#FF8C42"/>
+          <circle cx="9.5" cy="25" r="3.5" fill="#FFB347"/>
+          <path d="M20 13v7M24 23l5.5 3M15.5 23l-5.5 3" stroke="url(#hdrGrad)" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="hdrGrad" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF6B35"/>
+              <stop offset="1" stop-color="#FF8C42"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>创客OPC<span class="header__brand-orange"> · 共建商圈</span></span>
+      </a>
+      <a href="index.html" class="header__back">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        返回首页
+      </a>
+    </div>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section class="market-hero">
+    <div class="market-hero__bg" aria-hidden="true"></div>
+    <div class="market-hero__content">
+      <div class="market-hero__tag">
+        <span class="market-hero__tag-dot"></span>
+        项目集市
+      </div>
+      <h1 class="market-hero__title">共建<span>项目</span>一览</h1>
+      <p class="market-hero__sub">汇聚同城AI共创项目，点击查看详情或直接联系发起人</p>
+      <div class="market-hero__count" id="projectCount">
+        共 <strong>0</strong> 个项目
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Grid ===== -->
+  <main class="market-main">
+    <div class="market-grid" id="marketGrid">
+      <!-- JS 动态渲染 -->
+    </div>
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__brand">
+        <svg viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke="url(#ftrGrad)" stroke-width="2.5" stroke-dasharray="4 3"/>
+          <circle cx="20" cy="20" r="5" fill="url(#ftrGrad)"/>
+          <circle cx="20" cy="7" r="3.5" fill="#FF6B35"/>
+          <circle cx="30.5" cy="25" r="3.5" fill="#FF8C42"/>
+          <circle cx="9.5" cy="25" r="3.5" fill="#FFB347"/>
+          <defs>
+            <linearGradient id="ftrGrad" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#FF6B35"/>
+              <stop offset="1" stop-color="#FF8C42"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>创客OPC · 共建商圈</span>
+      </div>
+      <a href="index.html" class="footer__back-link">返回首页</a>
+      <p class="footer__copy">&copy; 2026 创客OPC · AI同城共建商圈</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var STORAGE_KEY = 'tcai_projects_v1';
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/\"/g, '&quot;');
+      }
+
+      function getStatusLabel(status, statusClass) {
+        if (status) return status;
+        var map = { '': '推广阶段', pre: '初期预热', reserved: '预留点位' };
+        return map[statusClass] || '推广阶段';
+      }
+
+      function getStatusClass(statusClass) {
+        if (statusClass === 'pre') return 'project-card__status--pre';
+        if (statusClass === 'reserved') return 'project-card__status--reserved';
+        return '';
+      }
+
+      function renderQr(src, label, name) {
+        if (src) {
+          return '<div class="project-card__qr">' +
+            '<img loading="lazy" src="' + escapeHtml(src) + '" alt="' + escapeHtml(name) + ' ' + escapeHtml(label) + '">' +
+            '<span>' + escapeHtml(label) + '</span>' +
+            '</div>';
+        }
+        return '<div class="project-card__qr project-card__qr--empty">' +
+          '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><path d="M14 14h7v7h-7zM17 17h1v1h-1zM14 17h1v1h-1zM17 14h1v1h-1z" stroke="currentColor" stroke-width="2"/></svg>' +
+          '<span>' + escapeHtml(label) + ' 待上传</span>' +
+          '</div>';
+      }
+
+      function loadProjects() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return [];
+          var data = JSON.parse(raw);
+          return Array.isArray(data) ? data : [];
+        } catch (e) {
+          return [];
+        }
+      }
+
+      function render() {
+        var grid = document.getElementById('marketGrid');
+        var countEl = document.getElementById('projectCount');
+        if (!grid) return;
+
+        var projects = loadProjects();
+
+        if (countEl) {
+          countEl.innerHTML = '共 <strong>' + projects.length + '</strong> 个项目';
+        }
+
+        if (!projects.length) {
+          grid.innerHTML =
+            '<div class="market-empty">' +
+            '<svg class="market-empty__icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>' +
+            '<div class="market-empty__title">暂无项目展示</div>' +
+            '<div class="market-empty__desc">项目正在筹备中，敬请期待</div>' +
+            '</div>';
+          return;
+        }
+
+        grid.innerHTML = projects.map(function (p) {
+          var reservedClass = p.statusClass === 'reserved' ? ' project-card--reserved' : '';
+          var statusLabel = getStatusLabel(p.status, p.statusClass);
+          var statusClass = 'project-card__status ' + getStatusClass(p.statusClass);
+          var qr1Html = renderQr(p.qrcode, '项目码', p.name);
+          var qr2Html = renderQr(p.qrcode2, '交流群码', p.name);
+
+          var linkBtnHtml = p.link
+            ? '<a href="' + escapeHtml(p.link) + '" class="project-card__btn project-card__btn--primary" target="_blank" rel="noopener">项目简介</a>'
+            : '';
+
+          var contactBtnHtml = p.contact
+            ? '<button class="project-card__btn project-card__btn--secondary" data-contact="' + escapeHtml(p.contact) + '">参与项目</button>'
+            : '';
+
+          var actionsHtml = (linkBtnHtml || contactBtnHtml)
+            ? '<div class="project-card__actions">' + linkBtnHtml + contactBtnHtml + '</div>'
+            : '';
+
+          return '<article class="project-card' + reservedClass + '" data-id="' + escapeHtml(p.id) + '">' +
+            '<span class="' + statusClass + '">' + escapeHtml(statusLabel) + '</span>' +
+            '<h3 class="project-card__name">' + escapeHtml(p.name) + '</h3>' +
+            '<p class="project-card__desc">' + escapeHtml(p.desc) + '</p>' +
+            '<div class="project-card__qr-wrap">' + qr1Html + qr2Html + '</div>' +
+            actionsHtml +
+            '</article>';
+        }).join('');
+
+        // Bind contact copy buttons
+        grid.querySelectorAll('[data-contact]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var contact = this.getAttribute('data-contact');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(contact).then(function () {
+                alert('发起人联系方式已复制：' + contact);
+              }).catch(function () {
+                prompt('发起人联系方式：', contact);
+              });
+            } else {
+              prompt('发起人联系方式：', contact);
+            }
+          });
+        });
+      }
+
+      // Render on load and when localStorage changes (e.g., from other tabs)
+      render();
+      window.addEventListener('storage', function (e) {
+        if (e.key === STORAGE_KEY) render();
+      });
+    })();
+  </script>
+</body>
+</html>
