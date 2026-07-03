@@ -2,5 +2,6 @@ node_modules/
 server/node_modules/
 server/admin.db
 dist/
+.workbuddy/
 .DS_Store
 *.log

@@ -5,6 +5,9 @@
 (function () {
   'use strict';
 
+  /* ===== API 基础地址（部署时修改） ===== */
+  var API_BASE = ''; // 部署后端服务器后改为 http://你的服务器IP:3001
+
   /* ========== 粒子背景系统 ========== */
   var canvas = document.getElementById('particleCanvas');
   if (canvas) {
@@ -1113,7 +1116,7 @@
 
     // 同步后端数据(如果可用)
     (function syncFromBackend() {
-      var API = 'http://localhost:3001';
+      var API = API_BASE || 'http://localhost:3001';
       fetch(API + '/api/projects')
         .then(function (r) { return r.json(); })
         .then(function (list) {
@@ -1247,7 +1250,7 @@
         if (!name || !contact || !title || !desc) return;
 
         // 同步提交到后端 API（可选）
-        var API = 'http://localhost:3001';
+        var API = API_BASE || 'http://localhost:3001';
         fetch(API + '/api/submissions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1300,7 +1303,7 @@
       };
       function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
       // Try API first
-      fetch('/api/cases').then(function (r) { return r.json(); }).then(function (data) {
+      fetch((API_BASE || '') + '/api/cases').then(function (r) { return r.json(); }).then(function (data) {
         if (Array.isArray(data) && data.length) { render(data); try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){} return; }
         throw new Error('empty');
       }).catch(function () {
