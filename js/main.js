@@ -5,9 +5,6 @@
 (function () {
   'use strict';
 
-  /* ===== API 基础地址（部署时修改） ===== */
-  var API_BASE = ''; // 部署后端服务器后改为 http://你的服务器IP:3001
-
   /* ========== 粒子背景系统 ========== */
   var canvas = document.getElementById('particleCanvas');
   if (canvas) {
@@ -434,769 +431,828 @@
         var reservedClass = p.statusClass === 'reserved' ? ' project-card--reserved' : '';
         var statusClass = 'project-card__status';
         if (p.statusClass === 'pre') statusClass += ' project-card__status--pre';
-        if (p.statusClass === 'reserved') statusClass += ' project-card__status--reserved';
+        else if (p.statusClass === '') statusClass += ' project-card__status--active';
+        else if (p.statusClass === 'reserved') statusClass += ' project-card__status--reserved';
 
-        var qr1Html = renderQr(p.qrcode, '项目码', p.name);
-        var qr2Html = renderQr(p.qrcode2, '交流群', p.name);
-
-        var linkBtnHtml = p.link ?
-          '<a href="' + escapeHtml(p.link) + '" class="project-card__btn project-card__btn--primary" target="_blank" rel="noopener">' +
-            '<span>项目简介</span>' +
-          '</a>' : '';
-
-        var contactBtnHtml = p.contact ?
-          '<button class="project-card__btn project-card__btn--secondary" data-contact="' + escapeHtml(p.contact) + '">' +
-            '<span>参与项目</span>' +
-          '</button>' : '';
-
-        var actionsHtml = (linkBtnHtml || contactBtnHtml) ?
-          '<div class="project-card__actions">' + linkBtnHtml + contactBtnHtml + '</div>' : '';
-
-        return '<article class="project-card' + reservedClass + '" data-id="' + p.id + '">' +
-          '<span class="' + statusClass + '">' + escapeHtml(p.status || '推广中') + '</span>' +
-          '<h3 class="project-card__name">' + escapeHtml(p.name) + '</h3>' +
-          '<p class="project-card__desc">' + escapeHtml(p.desc) + '</p>' +
-          '<div class="project-card__qr-wrap">' + qr1Html + qr2Html + '</div>' +
-          actionsHtml +
-        '</article>';
-      }).join('');
-
-      grid.querySelectorAll('[data-contact]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var contact = this.getAttribute('data-contact');
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(contact).then(function () {
-              alert('发起人联系方式已复制：' + contact);
-            }).catch(function () {
-              prompt('发起人联系方式：', contact);
-            });
-          } else {
-            prompt('发起人联系方式：', contact);
-          }
-        });
-      });
-    }
-
-    function createAdminUI() {
-      var wrapper = document.createElement('div');
-      wrapper.id = 'projectAdminWrapper';
-      wrapper.innerHTML =
-        '<div class="admin-overlay" id="adminOverlay">' +
-          '<div class="admin-modal" id="adminLoginModal">' +
-            '<h3 class="admin-modal__title">项目管理登录</h3>' +
-            '<input type="password" class="admin-input" id="adminPassword" placeholder="请输入管理密码" autocomplete="off">' +
-            '<div class="admin-actions">' +
-              '<button class="admin-btn admin-btn--secondary" id="adminLoginCancel">取消</button>' +
-              '<button class="admin-btn admin-btn--primary" id="adminLoginConfirm">确认</button>' +
-            '</div>' +
+        return '<div class="project-card' + reservedClass + '" data-id="' + p.id + '">' +
+          '<div class="project-card__header">' +
+            '<h3 class="project-card__name">' + escapeHtml(p.name) + '</h3>' +
+            '<span class="' + statusClass + '">' + escapeHtml(p.status || '进行中') + '</span>' +
           '</div>' +
-          '<div class="admin-modal admin-modal--wide" id="adminPanelModal" style="display:none;">' +
-            '<div class="admin-tabs">' +
-              '<button class="admin-tab active" data-tab="projects">项目管理</button>' +
-              '<button class="admin-tab" data-tab="faq">FAQ设置</button>' +
-              '<button class="admin-tab" data-tab="submissions">提交审核</button>' +
+          '<p class="project-card__desc">' + escapeHtml(p.desc) + '</p>' +
+          '<div class="project-card__body">' +
+            '<div class="project-card__qrs">' +
+              renderQr(p.qrcode, '小程序码', p.name) +
+              renderQr(p.qrcode2, '客服微信', p.name) +
             '</div>' +
-
-            '<!-- 项目管理面板 -->' +
-            '<div class="admin-tab-content active" id="tabProjects">' +
-              '<div class="admin-panel-body">' +
-                '<div class="admin-panel-col">' +
-                  '<h4 class="admin-form__title">现有项目</h4>' +
-                  '<div class="admin-project-list" id="adminProjectList"></div>' +
-                '</div>' +
-                '<div class="admin-panel-col">' +
-                  '<h4 class="admin-form__title" id="projectFormTitle">添加新项目</h4>' +
-                  '<div class="admin-form">' +
-                    '<input type="text" class="admin-input" id="adminInputName" placeholder="项目名称">' +
-                    '<textarea class="admin-input admin-input--area" id="adminInputDesc" placeholder="项目概述" rows="2"></textarea>' +
-                    '<input type="text" class="admin-input" id="adminInputLink" placeholder="项目落地页链接">' +
-                    '<input type="text" class="admin-input" id="adminInputContact" placeholder="参与项目联系方式（微信号/手机号）">' +
-                    '<label class="admin-file">' +
-                      '<input type="file" class="admin-file__input" id="adminInputQr" accept="image/*">' +
-                      '<span class="admin-file__btn">上传项目码</span>' +
-                      '<span class="admin-file__name" id="adminFileName">小程序码 / 落地页码</span>' +
-                    '</label>' +
-                    '<div class="admin-qr-preview" id="adminQrPreview"></div>' +
-                    '<label class="admin-file">' +
-                      '<input type="file" class="admin-file__input" id="adminInputQr2" accept="image/*">' +
-                      '<span class="admin-file__btn">上传交流群码</span>' +
-                      '<span class="admin-file__name" id="adminFileName2">项目交流群二维码</span>' +
-                    '</label>' +
-                    '<div class="admin-qr-preview" id="adminQrPreview2"></div>' +
-                    '<select class="admin-input" id="adminInputStatus">' +
-                      '<option value="">推广阶段</option>' +
-                      '<option value="pre">初期预热</option>' +
-                      '<option value="reserved">预留点位</option>' +
-                    '</select>' +
-                  '</div>' +
-                '</div>' +
-              '</div>' +
-              '<div class="admin-actions">' +
-                '<button class="admin-btn admin-btn--secondary" id="adminPanelClose">关闭</button>' +
-                '<button class="admin-btn admin-btn--primary" id="adminAddProject">添加项目</button>' +
-              '</div>' +
-            '</div>' +
-
-            '<!-- FAQ设置面板 -->' +
-            '<div class="admin-tab-content" id="tabFaq" style="display:none;">' +
-              '<div class="admin-faq-section">' +
-                '<h4 class="admin-form__title">FAQ 区域二维码</h4>' +
-                '<p class="admin-faq-hint">上传后将在 FAQ 区域显示，引导用户扫码加入社群或获取更多信息</p>' +
-                '<div class="admin-faq-qrs">' +
-                  '<div class="admin-faq-qr-item">' +
-                    '<label class="admin-file">' +
-                      '<input type="file" class="admin-file__input" id="adminFaqQr1" accept="image/*">' +
-                      '<span class="admin-file__btn">上传二维码1</span>' +
-                      '<span class="admin-file__name" id="adminFaqName1">社群入群码</span>' +
-                    '</label>' +
-                    '<div class="admin-qr-preview" id="adminFaqPreview1"></div>' +
-                    '<input type="text" class="admin-input" id="adminFaqLabel1" placeholder="二维码标签（如：扫码进群）">' +
-                  '</div>' +
-                  '<div class="admin-faq-qr-item">' +
-                    '<label class="admin-file">' +
-                      '<input type="file" class="admin-file__input" id="adminFaqQr2" accept="image/*">' +
-                      '<span class="admin-file__btn">上传二维码2</span>' +
-                      '<span class="admin-file__name" id="adminFaqName2">创始人微信</span>' +
-                    '</label>' +
-                    '<div class="admin-qr-preview" id="adminFaqPreview2"></div>' +
-                    '<input type="text" class="admin-input" id="adminFaqLabel2" placeholder="二维码标签（如：联系创始人）">' +
-                  '</div>' +
-                '</div>' +
-                '<div class="admin-actions">' +
-                  '<button class="admin-btn admin-btn--primary" id="adminSaveFaq">保存FAQ设置</button>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
-
-            '<!-- 提交审核面板 -->' +
-            '<div class="admin-tab-content" id="tabSubmissions" style="display:none;">' +
-              '<div class="admin-section">' +
-                '<h4 class="admin-form__title">待审核的项目点子</h4>' +
-                '<div class="admin-submissions-list" id="adminSubmissionsList">' +
-                  '<p style="color:var(--c-white-40);font-size:0.9rem;text-align:center;padding:24px;">暂无待审核的提交</p>' +
-                '</div>' +
-              '</div>' +
-            '</div>' +
+            (p.link && p.link !== '#' ? '<a href="' + escapeHtml(p.link) + '" target="_blank" class="project-card__link">访问项目 →</a>' : '') +
           '</div>' +
         '</div>';
-      document.body.appendChild(wrapper);
-
-      var trigger = document.getElementById('adminTrigger');
-      var overlay = document.getElementById('adminOverlay');
-      var loginModal = document.getElementById('adminLoginModal');
-      var panelModal = document.getElementById('adminPanelModal');
-      var passwordInput = document.getElementById('adminPassword');
-      var loginConfirm = document.getElementById('adminLoginConfirm');
-      var loginCancel = document.getElementById('adminLoginCancel');
-      var panelClose = document.getElementById('adminPanelClose');
-      var addBtn = document.getElementById('adminAddProject');
-      var projectList = document.getElementById('adminProjectList');
-
-      var pendingQr = '';
-      var pendingQr2 = '';
-
-      function openOverlay() { overlay.classList.add('is-visible'); }
-      function closeOverlay() {
-        overlay.classList.remove('is-visible');
-        passwordInput.value = '';
-        panelModal.style.display = 'none';
-        loginModal.style.display = '';
-      }
-
-      function resetForm() {
-        clearEditMode();
-        document.getElementById('adminInputName').value = '';
-        document.getElementById('adminInputDesc').value = '';
-        document.getElementById('adminInputLink').value = '';
-        document.getElementById('adminInputContact').value = '';
-        document.getElementById('adminInputStatus').value = '';
-
-        document.getElementById('adminInputQr').value = '';
-        document.getElementById('adminQrPreview').innerHTML = '';
-        document.getElementById('adminFileName').textContent = '小程序码 / 落地页码';
-        pendingQr = '';
-
-        document.getElementById('adminInputQr2').value = '';
-        document.getElementById('adminQrPreview2').innerHTML = '';
-        document.getElementById('adminFileName2').textContent = '项目交流群二维码';
-        pendingQr2 = '';
-      }
-
-      function bindQrUpload(inputId, previewId, nameId, pendingRef) {
-        var input = document.getElementById(inputId);
-        var preview = document.getElementById(previewId);
-        var fileName = document.getElementById(nameId);
-
-        input.addEventListener('change', function () {
-          var file = input.files && input.files[0];
-          if (!file) return;
-
-          if (file.size > 2 * 1024 * 1024) {
-            fileName.textContent = '图片过大，请压缩至 2MB 以内';
-            fileName.style.color = '#ef4444';
-            input.value = '';
-            return;
-          }
-
-          fileName.textContent = file.name;
-          fileName.style.color = '';
-
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            var dataUrl = e.target.result;
-            if (pendingRef === 'qr1') pendingQr = dataUrl;
-            else pendingQr2 = dataUrl;
-
-            var clearId = 'adminClear' + pendingRef;
-            preview.innerHTML = '<img src="' + dataUrl + '" alt="二维码预览"><button class="admin-btn admin-btn--danger admin-btn--small" id="' + clearId + '">清除</button>';
-            document.getElementById(clearId).addEventListener('click', function () {
-              input.value = '';
-              preview.innerHTML = '';
-              fileName.textContent = pendingRef === 'qr1' ? '小程序码 / 落地页码' : '项目交流群二维码';
-              if (pendingRef === 'qr1') pendingQr = '';
-              else pendingQr2 = '';
-            });
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      bindQrUpload('adminInputQr', 'adminQrPreview', 'adminFileName', 'qr1');
-      bindQrUpload('adminInputQr2', 'adminQrPreview2', 'adminFileName2', 'qr2');
-
-      function renderAdminList() {
-        var list = getProjects();
-        projectList.innerHTML = list.map(function (p, idx) {
-          var qrInfo = [];
-          if (p.qrcode) qrInfo.push('项目码');
-          if (p.qrcode2) qrInfo.push('交流群码');
-          return '<div class="admin-project-item">' +
-            '<div>' +
-              '<strong>' + escapeHtml(p.name) + '</strong>' +
-              '<span class="admin-project-status">' + escapeHtml(p.status || '推广中') + ' · ' + (qrInfo.length ? qrInfo.join(' / ') : '无二维码') + '</span>' +
-            '</div>' +
-            '<div class="admin-project-actions">' +
-              '<button class="admin-btn admin-btn--small" data-move-up="' + p.id + '">↑</button>' +
-              '<button class="admin-btn admin-btn--small" data-move-dn="' + p.id + '">↓</button>' +
-              '<button class="admin-btn admin-btn--secondary admin-btn--small" data-edit="' + p.id + '">编辑</button>' +
-              '<button class="admin-btn admin-btn--danger admin-btn--small" data-del="' + p.id + '">删除</button>' +
-            '</div>' +
-          '</div>';
-        }).join('');
-
-        // 上移
-        projectList.querySelectorAll('[data-move-up]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var id = this.getAttribute('data-move-up');
-            var items = getProjects();
-            var idx = -1;
-            for (var i = 0; i < items.length; i++) {
-              if (items[i].id === id) { idx = i; break; }
-            }
-            if (idx > 0) {
-              var tmp = items[idx - 1];
-              items[idx - 1] = items[idx];
-              items[idx] = tmp;
-              saveProjects(items);
-              renderProjects();
-              renderAdminList();
-            }
-          });
-        });
-
-        // 下移
-        projectList.querySelectorAll('[data-move-dn]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var id = this.getAttribute('data-move-dn');
-            var items = getProjects();
-            var idx = -1;
-            for (var i = 0; i < items.length; i++) {
-              if (items[i].id === id) { idx = i; break; }
-            }
-            if (idx < items.length - 1) {
-              var tmp = items[idx + 1];
-              items[idx + 1] = items[idx];
-              items[idx] = tmp;
-              saveProjects(items);
-              renderProjects();
-              renderAdminList();
-            }
-          });
-        });
-
-        projectList.querySelectorAll('[data-edit]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var id = this.getAttribute('data-edit');
-            loadProjectToForm(id);
-          });
-        });
-
-        projectList.querySelectorAll('[data-del]').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var id = this.getAttribute('data-del');
-            var next = list.filter(function (x) { return x.id !== id; });
-            saveProjects(next);
-            renderProjects();
-            renderAdminList();
-            clearEditMode();
-          });
-        });
-      }
-
-      var editingId = null;
-
-      function loadProjectToForm(id) {
-        var list = getProjects();
-        var p = list.find(function (x) { return x.id === id; });
-        if (!p) return;
-        editingId = id;
-
-        document.getElementById('adminInputName').value = p.name || '';
-        document.getElementById('adminInputDesc').value = p.desc || '';
-        document.getElementById('adminInputLink').value = p.link || '';
-        document.getElementById('adminInputContact').value = p.contact || '';
-        document.getElementById('adminInputStatus').value = p.statusClass || '';
-
-        pendingQr = p.qrcode || '';
-        pendingQr2 = p.qrcode2 || '';
-
-        if (pendingQr) {
-          document.getElementById('adminQrPreview').innerHTML =
-            '<img src="' + pendingQr + '" alt="预览"><button class="admin-btn admin-btn--danger admin-btn--small" id="adminClearQr">清除</button>';
-          bindClearBtn('adminClearQr', 'qr1');
-          document.getElementById('adminFileName').textContent = '已上传';
-        }
-        if (pendingQr2) {
-          document.getElementById('adminQrPreview2').innerHTML =
-            '<img src="' + pendingQr2 + '" alt="预览"><button class="admin-btn admin-btn--danger admin-btn--small" id="adminClearQr2">清除</button>';
-          bindClearBtn('adminClearQr2', 'qr2');
-          document.getElementById('adminFileName2').textContent = '已上传';
-        }
-
-        addBtn.textContent = '保存修改';
-        addBtn.classList.add('is-editing');
-      }
-
-      function bindClearBtn(clearId, ref) {
-        var el = document.getElementById(clearId);
-        if (!el) return;
-        el.addEventListener('click', function () {
-          if (ref === 'qr1') {
-            document.getElementById('adminInputQr').value = '';
-            document.getElementById('adminQrPreview').innerHTML = '';
-            document.getElementById('adminFileName').textContent = '小程序码 / 落地页码';
-            pendingQr = '';
-          } else {
-            document.getElementById('adminInputQr2').value = '';
-            document.getElementById('adminQrPreview2').innerHTML = '';
-            document.getElementById('adminFileName2').textContent = '项目交流群二维码';
-            pendingQr2 = '';
-          }
-        });
-      }
-
-      function clearEditMode() {
-        editingId = null;
-        addBtn.textContent = '添加项目';
-        addBtn.classList.remove('is-editing');
-      }
-
-      function showPanel() {
-        loginModal.style.display = 'none';
-        panelModal.style.display = '';
-        renderAdminList();
-        document.getElementById('adminInputName').focus();
-      }
-
-      trigger.addEventListener('click', openOverlay);
-      loginCancel.addEventListener('click', closeOverlay);
-      panelClose.addEventListener('click', closeOverlay);
-      overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) closeOverlay();
-      });
-
-      loginConfirm.addEventListener('click', function () {
-        _checkPassword(passwordInput.value).then(function (match) {
-          if (match) {
-            showPanel();
-          } else {
-            passwordInput.classList.add('is-error');
-            setTimeout(function () { passwordInput.classList.remove('is-error'); }, 600);
-          }
-        });
-      });
-
-      passwordInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') loginConfirm.click();
-      });
-
-      addBtn.addEventListener('click', function () {
-        var nameEl = document.getElementById('adminInputName');
-        var descEl = document.getElementById('adminInputDesc');
-        var linkEl = document.getElementById('adminInputLink');
-        var contactEl = document.getElementById('adminInputContact');
-        var statusEl = document.getElementById('adminInputStatus');
-
-        var name = nameEl.value.trim();
-        var desc = descEl.value.trim();
-        var link = linkEl.value.trim();
-        var contact = contactEl.value.trim();
-        var statusClass = statusEl.value;
-
-        if (!name || !desc) {
-          if (!name) nameEl.classList.add('is-error');
-          if (!desc) descEl.classList.add('is-error');
-          setTimeout(function () {
-            nameEl.classList.remove('is-error');
-            descEl.classList.remove('is-error');
-          }, 600);
-          return;
-        }
-
-        var statusMap = { '': '推广阶段', 'pre': '初期预热', 'reserved': '预留点位' };
-        var list = getProjects();
-
-        if (editingId) {
-          // 编辑模式：更新已有项目
-          for (var i = 0; i < list.length; i++) {
-            if (list[i].id === editingId) {
-              list[i].name = name;
-              list[i].desc = desc;
-              list[i].link = link;
-              list[i].contact = contact;
-              list[i].qrcode = pendingQr;
-              list[i].qrcode2 = pendingQr2;
-              list[i].status = statusMap[statusClass] || '推广阶段';
-              list[i].statusClass = statusClass;
-              break;
-            }
-          }
-          clearEditMode();
-        } else {
-          // 新增模式
-          list.push({
-            id: 'p' + Date.now(),
-            name: name,
-            desc: desc,
-            link: link,
-            contact: contact,
-            qrcode: pendingQr,
-            qrcode2: pendingQr2,
-            status: statusMap[statusClass] || '推广阶段',
-            statusClass: statusClass
-          });
-        }
-        saveProjects(list);
-        renderProjects();
-        renderAdminList();
-        resetForm();
-      });
-
-      // ========== Tab 切换 ==========
-      wrapper.querySelectorAll('.admin-tab').forEach(function (tab) {
-        tab.addEventListener('click', function () {
-          var target = this.getAttribute('data-tab');
-          wrapper.querySelectorAll('.admin-tab').forEach(function (t) { t.classList.remove('active'); });
-          this.classList.add('active');
-          wrapper.querySelectorAll('.admin-tab-content').forEach(function (c) { c.style.display = 'none'; });
-          var contentEl = document.getElementById('tab' + target.charAt(0).toUpperCase() + target.slice(1));
-          if (contentEl) contentEl.style.display = 'block';
-          if (target === 'faq') loadFaqSettings();
-          if (target === 'submissions' && window.renderSubmissions) window.renderSubmissions();
-        });
-      });
-
-      // ========== FAQ 二维码管理 ==========
-      var FAQ_KEY = 'tcai_faq_qr_v1';
-      var faqPendingQr1 = '';
-      var faqPendingQr2 = '';
-
-      function loadFaqSettings() {
-        try {
-          var raw = localStorage.getItem(FAQ_KEY);
-          if (!raw) return;
-          var data = JSON.parse(raw);
-          if (data.qr1) {
-            faqPendingQr1 = data.qr1;
-            document.getElementById('adminFaqPreview1').innerHTML =
-              '<img src="' + data.qr1 + '" alt="预览"><button class="admin-btn admin-btn--danger admin-btn--small" id="adminClearFaq1">清除</button>';
-            document.getElementById('adminFaqName1').textContent = '已上传';
-            document.getElementById('adminFaqLabel1').value = data.label1 || '';
-            bindFaqClearBtn('adminClearFaq1', 1);
-          }
-          if (data.qr2) {
-            faqPendingQr2 = data.qr2;
-            document.getElementById('adminFaqPreview2').innerHTML =
-              '<img src="' + data.qr2 + '" alt="预览"><button class="admin-btn admin-btn--danger admin-btn--small" id="adminClearFaq2">清除</button>';
-            document.getElementById('adminFaqName2').textContent = '已上传';
-            document.getElementById('adminFaqLabel2').value = data.label2 || '';
-            bindFaqClearBtn('adminClearFaq2', 2);
-          }
-        } catch (e) {}
-      }
-
-      function bindFaqUpload(inputId, previewId, nameId, num) {
-        var input = document.getElementById(inputId);
-        var preview = document.getElementById(previewId);
-        var fileName = document.getElementById(nameId);
-
-        input.addEventListener('change', function () {
-          var file = input.files && input.files[0];
-          if (!file) return;
-          if (file.size > 2 * 1024 * 1024) {
-            fileName.textContent = '图片过大';
-            fileName.style.color = '#ef4444';
-            input.value = '';
-            return;
-          }
-          fileName.textContent = file.name;
-          fileName.style.color = '';
-
-          var reader = new FileReader();
-          reader.onload = function (e) {
-            var dataUrl = e.target.result;
-            if (num === 1) faqPendingQr1 = dataUrl; else faqPendingQr2 = dataUrl;
-
-            var clearId = 'adminClearFaq' + num;
-            preview.innerHTML = '<img src="' + dataUrl + '" alt="预览"><button class="admin-btn admin-btn--danger admin-btn--small" id="' + clearId + '">清除</button>';
-            bindFaqClearBtn(clearId, num);
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-
-      function bindFaqClearBtn(clearId, num) {
-        var el = document.getElementById(clearId);
-        if (!el) return;
-        el.addEventListener('click', function () {
-          if (num === 1) {
-            document.getElementById('adminFaqQr1').value = '';
-            document.getElementById('adminFaqPreview1').innerHTML = '';
-            document.getElementById('adminFaqName1').textContent = '社群入群码';
-            faqPendingQr1 = '';
-          } else {
-            document.getElementById('adminFaqQr2').value = '';
-            document.getElementById('adminFaqPreview2').innerHTML = '';
-            document.getElementById('adminFaqName2').textContent = '创始人微信';
-            faqPendingQr2 = '';
-          }
-        });
-      }
-
-      bindFaqUpload('adminFaqQr1', 'adminFaqPreview1', 'adminFaqName1', 1);
-      bindFaqUpload('adminFaqQr2', 'adminFaqPreview2', 'adminFaqName2', 2);
-
-      document.getElementById('adminSaveFaq').addEventListener('click', function () {
-        var label1 = document.getElementById('adminFaqLabel1').value.trim();
-        var label2 = document.getElementById('adminFaqLabel2').value.trim();
-
-        var data = {
-          qr1: faqPendingQr1,
-          qr2: faqPendingQr2,
-          label1: label1 || '扫码进群',
-          label2: label2 || '联系创始人'
-        };
-        try { localStorage.setItem(FAQ_KEY, JSON.stringify(data)); } catch (e) {}
-        renderFaqQrCodes();
-        alert('FAQ 二维码设置已保存');
-      });
-
-      // ========== Admin: 提交审核面板 ==========
-      (function initAdminSubmissions() {
-        var SUBMIT_KEY = 'tcai_submissions_v1';
-        var listEl = document.getElementById('adminSubmissionsList');
-        if (!listEl) return;
-
-        function getSubmissions() {
-          try { return JSON.parse(localStorage.getItem(SUBMIT_KEY)) || []; }
-          catch(e) { return []; }
-        }
-
-        function saveSubmissions(list) {
-          try { localStorage.setItem(SUBMIT_KEY, JSON.stringify(list)); } catch(e) {}
-        }
-
-        window.renderSubmissions = function () {
-          var list = getSubmissions();
-          var pending = list.filter(function (s) { return s.status === 'pending'; });
-          if (pending.length === 0) {
-            listEl.innerHTML = '<p style="color:var(--c-white-40);font-size:0.9rem;text-align:center;padding:24px;">暂无待审核的提交</p>';
-            return;
-          }
-          listEl.innerHTML = pending.map(function (s) {
-            return '<div class="admin-submission-item">' +
-              '<div class="admin-submission__header">' +
-                '<strong>' + escapeHtml(s.title) + '</strong>' +
-                '<span style="color:var(--c-orange);font-size:0.8rem;font-weight:700;">待审核</span>' +
-              '</div>' +
-              '<div class="admin-submission__meta">' +
-                '<span>提交人：' + escapeHtml(s.name) + '</span>' +
-                '<span>联系方式：' + escapeHtml(s.contact) + '</span>' +
-                '<span>' + new Date(s.createdAt).toLocaleDateString('zh-CN') + '</span>' +
-              '</div>' +
-              '<p class="admin-submission__desc">' + escapeHtml(s.desc) + '</p>' +
-              '<div class="admin-submission__actions">' +
-                '<button class="admin-btn admin-btn--primary admin-btn--small" data-approve="' + s.id + '">通过并转为项目</button>' +
-                '<button class="admin-btn admin-btn--danger admin-btn--small" data-reject="' + s.id + '">拒绝</button>' +
-              '</div>' +
-            '</div>';
-          }).join('');
-
-          listEl.querySelectorAll('[data-approve]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-              var id = this.getAttribute('data-approve');
-              var submissions = getSubmissions();
-              var sub = null;
-              for (var i = 0; i < submissions.length; i++) {
-                if (submissions[i].id === id) {
-                  submissions[i].status = 'approved';
-                  sub = submissions[i];
-                  break;
-                }
-              }
-              saveSubmissions(submissions);
-              if (sub) {
-                var projects = (function () {
-                  try { return JSON.parse(localStorage.getItem('tcai_projects_v1')) || []; }
-                  catch(e) { return []; }
-                })();
-                projects.push({
-                  id: 'p' + Date.now(),
-                  name: sub.title,
-                  desc: sub.desc,
-                  link: '',
-                  contact: sub.contact,
-                  qrcode: '',
-                  qrcode2: '',
-                  status: '推广阶段',
-                  statusClass: ''
-                });
-                try { localStorage.setItem('tcai_projects_v1', JSON.stringify(projects)); } catch(e) {}
-                if (window.renderProjects) window.renderProjects();
-                if (window.renderAdminList) window.renderAdminList();
-              }
-              window.renderSubmissions();
-            });
-          });
-
-          listEl.querySelectorAll('[data-reject]').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-              var id = this.getAttribute('data-reject');
-              var submissions = getSubmissions();
-              for (var i = 0; i < submissions.length; i++) {
-                if (submissions[i].id === id) {
-                  submissions[i].status = 'rejected';
-                  break;
-                }
-              }
-              saveSubmissions(submissions);
-              window.renderSubmissions();
-            });
-          });
-        };
-
-        window.renderSubmissions();
-      })();
-
-      // ========== 编辑模式标题更新 ==========
-      var origLoadProjectToForm = loadProjectToForm;
-      loadProjectToForm = function (id) {
-        origLoadProjectToForm(id);
-        document.getElementById('projectFormTitle').textContent = '编辑项目';
-      };
-      var origClearEditMode = clearEditMode;
-      clearEditMode = function () {
-        origClearEditMode();
-        document.getElementById('projectFormTitle').textContent = '添加新项目';
-      };
-
+      }).join('');
     }
 
-    renderProjects();
+    // 管理后台
+    var adminOverlay = document.getElementById('adminOverlay');
+    var adminLogin = document.getElementById('adminLogin');
+    var adminPanel = document.getElementById('adminPanel');
+    var adminList = document.getElementById('adminList');
+    var adminForm = document.getElementById('adminForm');
 
-    // 同步后端数据(如果可用)
-    (function syncFromBackend() {
-      var API = API_BASE || 'http://localhost:3001';
-      fetch(API + '/api/projects')
-        .then(function (r) { return r.json(); })
-        .then(function (list) {
-          if (Array.isArray(list) && list.length) {
-            saveProjects(list);
-            renderProjects();
-          }
-        })
-        .catch(function () {});
-      fetch(API + '/api/faq-qr')
-        .then(function (r) { return r.json(); })
-        .then(function (data) {
-          if (data && data.qr1) {
-            try { localStorage.setItem('tcai_faq_qr_v1', JSON.stringify(data)); } catch (e) {}
-            var container = document.getElementById('faqQrContainer');
-            if (container) container.remove();
-            renderFaqQrCodes();
-          }
-        })
-        .catch(function () {});
-    })();
+    function openAdmin() {
+      if (adminOverlay) adminOverlay.style.display = 'flex';
+    }
+    function closeAdmin() {
+      if (adminOverlay) adminOverlay.style.display = 'none';
+      if (adminLogin) adminLogin.style.display = 'block';
+      if (adminPanel) adminPanel.style.display = 'none';
+    }
 
-    // ========== 项目筛选 ==========
-    (function initProjectFilter() {
-      var filterEl = document.getElementById('projectsFilter');
-      if (!filterEl) return;
-      filterEl.addEventListener('click', function (e) {
-        var btn = e.target.closest('.projects-filter__btn');
-        if (!btn) return;
-        filterEl.querySelectorAll('.projects-filter__btn').forEach(function (b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        renderProjects(btn.getAttribute('data-filter'));
+    function showAdminPanel() {
+      if (adminLogin) adminLogin.style.display = 'none';
+      if (adminPanel) adminPanel.style.display = 'block';
+      renderAdminList();
+    }
+
+    function renderAdminList() {
+      if (!adminList) return;
+      var list = getProjects();
+      adminList.innerHTML = list.map(function (p, idx) {
+        return '<div class="admin-item" data-idx="' + idx + '">' +
+          '<div class="admin-item__info">' +
+            '<strong>' + escapeHtml(p.name) + '</strong>' +
+            '<span>' + escapeHtml(p.status || '进行中') + '</span>' +
+          '</div>' +
+          '<div class="admin-item__actions">' +
+            '<button class="admin-btn admin-btn--edit" onclick="window._editProject(' + idx + ')">编辑</button>' +
+            '<button class="admin-btn admin-btn--del" onclick="window._delProject(' + idx + ')">删除</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    window._editProject = function (idx) {
+      var list = getProjects();
+      var p = list[idx];
+      if (!p) return;
+      if (adminForm) {
+        document.getElementById('adminId').value = p.id || '';
+        document.getElementById('adminName').value = p.name || '';
+        document.getElementById('adminDesc').value = p.desc || '';
+        document.getElementById('adminLink').value = p.link || '';
+        document.getElementById('adminContact').value = p.contact || '';
+        document.getElementById('adminQrcode').value = p.qrcode || '';
+        document.getElementById('adminQrcode2').value = p.qrcode2 || '';
+        document.getElementById('adminStatus').value = p.status || '';
+        document.getElementById('adminStatusClass').value = p.statusClass || '';
+        adminForm.dataset.editIdx = idx;
+      }
+    };
+
+    window._delProject = function (idx) {
+      if (!confirm('确定删除此项目？')) return;
+      var list = getProjects();
+      list.splice(idx, 1);
+      saveProjects(list);
+      renderAdminList();
+      renderProjects();
+    };
+
+    // 绑定事件
+    var adminBtn = document.getElementById('adminBtn');
+    if (adminBtn) adminBtn.addEventListener('click', openAdmin);
+
+    var adminClose = document.getElementById('adminClose');
+    if (adminClose) adminClose.addEventListener('click', closeAdmin);
+
+    var adminLoginSubmit = document.getElementById('adminLoginSubmit');
+    if (adminLoginSubmit) {
+      adminLoginSubmit.addEventListener('click', function () {
+        var pwd = document.getElementById('adminPwd').value;
+        _checkPassword(pwd).then(function (ok) {
+          if (ok) {
+            showAdminPanel();
+          } else {
+            alert('密码错误');
+          }
+        });
       });
-    })();
+    }
 
-    // ========== FAQ 二维码渲染（放到 CTA 区域） ==========
-    (function initFaqQr() {
-      var FAQ_KEY = 'tcai_faq_qr_v1';
+    if (adminForm) {
+      adminForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var list = getProjects();
+        var idx = parseInt(adminForm.dataset.editIdx || '-1', 10);
+        var proj = {
+          id: document.getElementById('adminId').value.trim() || ('p' + Date.now()),
+          name: document.getElementById('adminName').value.trim(),
+          desc: document.getElementById('adminDesc').value.trim(),
+          link: document.getElementById('adminLink').value.trim(),
+          contact: document.getElementById('adminContact').value.trim(),
+          qrcode: document.getElementById('adminQrcode').value.trim(),
+          qrcode2: document.getElementById('adminQrcode2').value.trim(),
+          status: document.getElementById('adminStatus').value.trim(),
+          statusClass: document.getElementById('adminStatusClass').value.trim()
+        };
+        if (!proj.name) return;
+        if (idx >= 0) {
+          list[idx] = proj;
+        } else {
+          list.push(proj);
+        }
+        saveProjects(list);
+        renderAdminList();
+        renderProjects();
+        adminForm.reset();
+        adminForm.dataset.editIdx = '';
+      });
+    }
 
-      window.renderFaqQrCodes = function () {
-        var existing = document.getElementById('faqQrContainer');
-        if (existing) existing.remove();
+    // 分类筛选
+    var filterBtns = document.querySelectorAll('.project-filter__btn');
+    filterBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        filterBtns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        renderProjects(btn.dataset.filter);
+      });
+    });
 
-        try {
-          var raw = localStorage.getItem(FAQ_KEY);
-          if (!raw) return;
-          var data = JSON.parse(raw);
+    // 初始渲染
+    renderProjects();
+  })();
 
-          var hasQr1 = data.qr1 || '';
-          var hasQr2 = data.qr2 || '';
-          if (!hasQr1 && !hasQr2) return;
 
-          var html = '<div class="faq-qr-container" id="faqQrContainer">';
-          if (hasQr1) {
-            html += '<div class="faq-qr-item">' +
-              '<img loading="lazy" src="' + hasQr1 + '" alt="FAQ二维码1">' +
-              '<span>' + escapeHtml(data.label1 || '扫码进群') + '</span>' +
-            '</div>';
+  /* ========== 共建规则（Rules） ========== */
+  // 规则数据已移至 index.html 静态渲染
+
+
+  /* ========== 点子墙（Ideas） ========== */
+  (function initIdeas() {
+    var IDEAS_KEY = 'tcai_ideas_v1';
+    var SUBMIT_KEY = 'tcai_idea_submissions';
+    var API_BASE = ''; // 部署后端后改为实际地址
+
+    // 系统预置点子
+    var systemIdeas = [
+      { id: 'sys1', title: 'AI 智能客服', content: '为本地商家提供 7×24 小时智能客服解决方案，支持多轮对话、订单查询、售后处理。', category: 'system', isSystem: true, createdAt: '2026-07-01T10:00:00Z' },
+      { id: 'sys2', title: '短视频自动生成', content: '基于 AI 的短视频批量生成工具，适合电商、餐饮、教育等行业快速产出营销素材。', category: 'system', isSystem: true, createdAt: '2026-07-02T14:30:00Z' },
+      { id: 'sys3', title: '本地生活小程序', content: '整合同城餐饮、娱乐、购物、家政等服务的一站式小程序平台。', category: 'system', isSystem: true, createdAt: '2026-07-03T09:15:00Z' },
+      { id: 'sys4', title: 'AI 辅助设计', content: '为中小企业提供 AI 辅助的 Logo、海报、包装设计服务，降低设计成本。', category: 'system', isSystem: true, createdAt: '2026-07-04T16:45:00Z' },
+      { id: 'sys5', title: '智能排班系统', content: '针对餐饮、零售等行业的 AI 智能排班工具，优化人力成本。', category: 'system', isSystem: true, createdAt: '2026-07-05T11:20:00Z' }
+    ];
+
+    // 热门项目点子
+    var hotIdeas = [
+      { id: 'hot1', title: '社区团购平台', content: '基于 LBS 的社区团购小程序，支持团长管理、订单分拣、配送路线优化。', category: 'hot', createdAt: '2026-07-06T08:00:00Z' },
+      { id: 'hot2', title: 'AI 英语陪练', content: '面向 K12 学生的 AI 英语口语陪练应用，支持发音纠正、情景对话。', category: 'hot', createdAt: '2026-07-06T12:30:00Z' },
+      { id: 'hot3', title: '宠物服务平台', content: '整合宠物寄养、美容、医疗、用品的一站式本地服务平台。', category: 'hot', createdAt: '2026-07-07T15:00:00Z' }
+    ];
+
+    function getIdeas() {
+      var saved = [];
+      try {
+        var raw = localStorage.getItem(IDEAS_KEY);
+        saved = raw ? JSON.parse(raw) : [];
+      } catch (e) { saved = []; }
+      // 合并系统预置 + 热门 + 用户提交
+      var all = systemIdeas.concat(hotIdeas).concat(saved);
+      return all;
+    }
+
+    function saveIdeas(list) {
+      // 只保存用户提交的，系统预置的每次动态合并
+      var userIdeas = list.filter(function (i) { return !i.isSystem && !i.isHot; });
+      try { localStorage.setItem(IDEAS_KEY, JSON.stringify(userIdeas)); } catch (e) {}
+    }
+
+    function getCachedIdeas() {
+      return getIdeas();
+    }
+
+    function getCategoryFromIdea(idea) {
+      if (idea.isSystem || idea.category === 'system') return 'system';
+      if (idea.category === 'hot') return 'hot';
+      if (idea.category === 'user') return 'user';
+      return 'fresh';
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // 全局函数：打开点子详情
+    window.openIdeaTag = function (title, content, isSystem, id) {
+      var overlay = document.getElementById('ideaTagOverlay');
+      var expandedTitle = document.getElementById('expandedTitle');
+      var expandedContent = document.getElementById('expandedContent');
+      var expandedBadge = document.getElementById('expandedBadge');
+      if (!overlay) return;
+      if (expandedTitle) expandedTitle.textContent = title || '';
+      if (expandedContent) expandedContent.textContent = content || '';
+      if (expandedBadge) expandedBadge.style.display = isSystem ? 'inline-block' : 'none';
+      overlay.style.display = 'flex';
+      overlay.dataset.ideaId = id || '';
+    };
+
+    window.closeIdeaTag = function () {
+      var overlay = document.getElementById('ideaTagOverlay');
+      if (overlay) overlay.style.display = 'none';
+    };
+
+    // 点击遮罩关闭
+    var overlay = document.getElementById('ideaTagOverlay');
+    if (overlay) {
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeIdeaTag();
+      });
+    }
+
+    // ESC 关闭
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeIdeaTag();
+    });
+
+    // 分类切换
+    var currentIdeaCategory = 'all';
+    var catBtns = document.querySelectorAll('.idea-cat__btn');
+    catBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        catBtns.forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentIdeaCategory = btn.dataset.cat || 'all';
+        renderTags(getIdeas());
+      });
+    });
+
+    function renderTags(list) {
+      renderTree(list);
+    }
+
+    // 兼容老调用：renderTree → 渲染"创意气泡树"
+    function renderTree(list) {
+      var container = document.getElementById('ideaTagsContainer');
+      if (!container) return;
+      if (!list || !list.length) {
+        container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:14px;padding:80px 20px">还没有创意，期待你的灵感挂上树梢 🌱</div>';
+        return;
+      }
+
+      // 1. 分类统计
+      var cats = { system: 0, hot: 0, user: 0, fresh: 0 };
+      list.forEach(function(it) { cats[getCategoryFromIdea(it)]++; });
+      var totalEl = document.getElementById('catCountAll');
+      var sysEl = document.getElementById('catCountSystem');
+      var hotEl = document.getElementById('catCountHot');
+      var usrEl = document.getElementById('catCountUser');
+      var frhEl = document.getElementById('catCountFresh');
+      if (totalEl) totalEl.textContent = list.length;
+      if (sysEl) sysEl.textContent = cats.system;
+      if (hotEl) hotEl.textContent = cats.hot;
+      if (usrEl) usrEl.textContent = cats.user;
+      if (frhEl) frhEl.textContent = cats.fresh;
+
+      // 2. 按当前分类过滤
+      var filtered;
+      if (currentIdeaCategory === 'all') {
+        filtered = list.slice();
+      } else {
+        filtered = list.filter(function(it) { return getCategoryFromIdea(it) === currentIdeaCategory; });
+      }
+      if (!filtered.length) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-secondary);font-size:14px;padding:80px 20px">该分类下还没有创意</div>';
+        return;
+      }
+
+      // 3. 打散顺序
+      var shuffled = filtered.slice().sort(function() { return Math.random() - 0.5; });
+
+      // 4. SVG 画布
+      var W = 1200;
+      var H = 940;
+      var cx = W / 2;
+      var groundY = H - 30;
+      var trunkBaseY = groundY;
+      var trunkTop = groundY - 400;
+
+      // 5. 树枝收集器
+      var allBranches = [];
+      var allSpots = [];
+
+      function buildBranchPath(x1, y1, x2, y2, curve) {
+        var mx = (x1 + x2) / 2;
+        var my = (y1 + y2) / 2;
+        var dx = x2 - x1, dy = y2 - y1;
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var nx = -dy / len, ny = dx / len;
+        var offset = (Math.random() - 0.5) * (curve || 0.18) * len;
+        var cpx = mx + nx * offset;
+        var cpy = my + ny * offset;
+        return 'M ' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+               ' Q ' + cpx.toFixed(1) + ' ' + cpy.toFixed(1) + ', ' + x2.toFixed(1) + ' ' + y2.toFixed(1);
+      }
+
+      function bezierPoint(t, x1, y1, cx1, cy1, cx2, cy2, x2, y2) {
+        var it = 1 - t;
+        return {
+          x: it*it*it*x1 + 3*it*it*t*cx1 + 3*it*t*t*cx2 + t*t*t*x2,
+          y: it*it*it*y1 + 3*it*it*t*cy1 + 3*it*t*t*cy2 + t*t*t*y2
+        };
+      }
+
+      function growTree(startX, startY, angle, length, width, depth, layer, maxDepth) {
+        if (depth > maxDepth || length < 14) return;
+        var endX = startX + Math.cos(angle) * length;
+        var endY = startY + Math.sin(angle) * length;
+        var perpX = -Math.sin(angle);
+        var perpY = Math.cos(angle);
+        var bulge = (Math.random() - 0.4) * 0.22;
+        var c1x = startX + Math.cos(angle) * length * 0.4 + perpX * length * bulge;
+        var c1y = startY + Math.sin(angle) * length * 0.4 + perpY * length * bulge;
+        var c2x = startX + Math.cos(angle) * length * 0.75 + perpX * length * bulge * 0.6;
+        var c2y = startY + Math.sin(angle) * length * 0.75 + perpY * length * bulge * 0.6;
+        var path = 'M ' + startX.toFixed(1) + ' ' + startY.toFixed(1) +
+                   ' C ' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ', ' +
+                         c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ', ' +
+                         endX.toFixed(1) + ' ' + endY.toFixed(1);
+        var branch = {
+          path: path, endX: endX, endY: endY,
+          startX: startX, startY: startY,
+          width: width, layer: layer, depth: depth,
+          c1x: c1x, c1y: c1y, c2x: c2x, c2y: c2y
+        };
+        allBranches.push(branch);
+        if (depth >= 1) {
+          allSpots.push({ x: endX, y: endY, layer: layer, parentAngle: angle, branch: branch });
+          if (depth <= 2) {
+            for (var mp = 0.45; mp < 0.95; mp += 0.5) {
+              var pt = bezierPoint(mp, startX, startY, c1x, c1y, c2x, c2y, endX, endY);
+              allSpots.push({ x: pt.x, y: pt.y, layer: layer, parentAngle: angle, branch: branch });
+            }
           }
-          if (hasQr2) {
-            html += '<div class="faq-qr-item">' +
-              '<img loading="lazy" src="' + hasQr2 + '" alt="FAQ二维码2">' +
-              '<span>' + escapeHtml(data.label2 || '联系创始人') + '</span>' +
-            '</div>';
+        }
+        if (depth < maxDepth) {
+          var subCount, spreadBase;
+          if (depth === 0) { subCount = 5; spreadBase = 1.0; }
+          else if (depth === 1) { subCount = 3; spreadBase = 0.55; }
+          else if (depth === 2) { subCount = 2; spreadBase = 0.5; }
+          else { subCount = Math.random() < 0.6 ? 2 : 1; spreadBase = 0.45; }
+          for (var i = 0; i < subCount; i++) {
+            var t = subCount === 1 ? 0 : (i / (subCount - 1)) * 2 - 1;
+            var spread = t * spreadBase + (Math.random() - 0.5) * 0.2;
+            var subAngle = angle + spread;
+            if (subAngle > -Math.PI / 2 + 0.2) subAngle = -Math.PI / 2 + 0.2 + (Math.random() - 0.5) * 0.3;
+            if (subAngle > -0.3) subAngle = -0.3 - Math.random() * 0.2;
+            var subLength = length * (0.6 + Math.random() * 0.22);
+            var subWidth = width * (0.55 + Math.random() * 0.15);
+            growTree(endX, endY, subAngle, subLength, subWidth, depth + 1, layer, maxDepth);
           }
-          html += '</div>';
+        }
+      }
 
-          var ctaArea = document.querySelector('.cta-qr-area');
-          if (ctaArea) ctaArea.insertAdjacentHTML('beforeend', html);
-        } catch (e) {}
+      // 生成 3 层树
+      var trunkLen = 260;
+      growTree(cx - 10, trunkBaseY, -Math.PI / 2 - 0.05, trunkLen + 25, 7, 0, 'far', 4);
+      growTree(cx, trunkBaseY, -Math.PI / 2, trunkLen, 8.5, 0, 'mid', 4);
+      growTree(cx + 8, trunkBaseY, -Math.PI / 2 + 0.04, trunkLen - 5, 9.5, 0, 'near', 4);
+
+      // 6. 分配气泡挂点
+      allSpots.sort(function() { return Math.random() - 0.5; });
+      var layerMax = { far: 7, mid: 12, near: 18 };
+      var layerCount = { far: 0, mid: 0, near: 0 };
+      var usedSpots = [];
+      allSpots.forEach(function(s) {
+        if (layerCount[s.layer] >= layerMax[s.layer]) return;
+        usedSpots.push(s);
+        layerCount[s.layer]++;
+      });
+      while (usedSpots.length < shuffled.length && usedSpots.length > 0) {
+        usedSpots.push(usedSpots[usedSpots.length % usedSpots.length]);
+      }
+      usedSpots = usedSpots.slice(0, shuffled.length);
+
+      // 7. 气泡配色（参考图：深红、橙色、深灰、浅灰）
+      var bubbleColors = {
+        system: { fill: '#A0302A', stroke: '#7A2018', text: '#FFFFFF' },
+        hot:    { fill: '#E8702A', stroke: '#C05A18', text: '#FFFFFF' },
+        user:   { fill: '#5A5A5A', stroke: '#3A3A3A', text: '#FFFFFF' },
+        fresh:  { fill: '#B0B0B0', stroke: '#8A8A8A', text: '#333333' }
       };
 
-      renderFaqQrCodes();
-    })();
+      // 气泡形状类型：ellipse, roundedRect, cloud, starBurst, circle, smallDot
+      var shapeTypes = ['ellipse', 'roundedRect', 'cloud', 'starBurst', 'circle', 'smallDot'];
 
-    // ========== 用户提交项目表单 ==========
-    (function initSubmitForm() {
-      var SUBMIT_KEY = 'tcai_submissions_v1';
-      var form = document.getElementById('submitForm');
-      if (!form) return;
+      // 8. SVG 渲染
+      var svgParts = [];
+      svgParts.push('<svg class="idea-tree__svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">');
+
+      svgParts.push('<defs>');
+      // 树干渐变
+      svgParts.push('  <linearGradient id="trunkGrad" x1="0%" y1="0%" x2="100%" y2="0%">');
+      svgParts.push('    <stop offset="0%"  stop-color="#3A2110" />');
+      svgParts.push('    <stop offset="30%" stop-color="#5A331B" />');
+      svgParts.push('    <stop offset="60%" stop-color="#4A2A14" />');
+      svgParts.push('    <stop offset="100%" stop-color="#2A1608" />');
+      svgParts.push('  </linearGradient>');
+      svgParts.push('  <linearGradient id="trunkHi" x1="0%" y1="0%" x2="100%" y2="0%">');
+      svgParts.push('    <stop offset="0%" stop-color="rgba(255,210,150,0.25)" />');
+      svgParts.push('    <stop offset="40%" stop-color="rgba(255,210,150,0.0)" />');
+      svgParts.push('  </linearGradient>');
+
+      // 气泡阴影
+      svgParts.push('  <filter id="bubbleShadow" x="-50%" y="-30%" width="200%" height="160%">');
+      svgParts.push('    <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.45" />');
+      svgParts.push('  </filter>');
+      svgParts.push('  <filter id="bubbleFar" x="-50%" y="-30%" width="200%" height="160%">');
+      svgParts.push('    <feGaussianBlur stdDeviation="1.8" />');
+      svgParts.push('  </filter>');
+      svgParts.push('  <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">');
+      svgParts.push('    <feGaussianBlur stdDeviation="8" />');
+      svgParts.push('  </filter>');
+      svgParts.push('  <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">');
+      svgParts.push('    <feGaussianBlur stdDeviation="3" />');
+      svgParts.push('  </filter>');
+      svgParts.push('</defs>');
+
+      // ---- 背景 ----
+      svgParts.push('<ellipse cx="' + cx + '" cy="' + (H - 28) + '" rx="500" ry="34" fill="rgba(0,0,0,0.65)" />');
+      svgParts.push('<ellipse cx="' + cx + '" cy="' + (H - 32) + '" rx="460" ry="22" fill="rgba(255,150,60,0.22)" filter="url(#glow)" />');
+
+      for (var gpi = 0; gpi < 36; gpi++) {
+        var gpx = 50 + Math.random() * (W - 100);
+        var gpy = 50 + Math.random() * (H - 220);
+        var gpr = 1.5 + Math.random() * 3.2;
+        var gpo = 0.12 + Math.random() * 0.32;
+        svgParts.push('<circle cx="' + gpx + '" cy="' + gpy + '" r="' + gpr + '" fill="#FFE3A8" opacity="' + gpo + '" filter="url(#softGlow)" />');
+      }
+
+      // ---- 树根 ----
+      var roots = [
+        { x1: cx - 55, y1: trunkBaseY + 8, x2: cx - 195, y2: trunkBaseY + 38, w: 24 },
+        { x1: cx + 55, y1: trunkBaseY + 8, x2: cx + 200, y2: trunkBaseY + 32, w: 24 },
+        { x1: cx - 22, y1: trunkBaseY + 10, x2: cx - 115, y2: trunkBaseY + 80, w: 16 },
+        { x1: cx + 22, y1: trunkBaseY + 10, x2: cx + 120, y2: trunkBaseY + 75, w: 16 },
+        { x1: cx - 5, y1: trunkBaseY + 12, x2: cx - 40, y2: trunkBaseY + 100, w: 11 },
+        { x1: cx + 5, y1: trunkBaseY + 12, x2: cx + 40, y2: trunkBaseY + 95, w: 11 }
+      ];
+      roots.forEach(function(r) {
+        var rp = buildBranchPath(r.x1, r.y1, r.x2, r.y2, 0.3);
+        svgParts.push('<path d="' + rp + '" stroke="#3A2110" stroke-width="' + r.w + '" fill="none" stroke-linecap="round" opacity="0.88" />');
+      });
+
+      // ---- 树干 ----
+      var trunkPath = 'M ' + (cx - 65) + ' ' + (trunkBaseY + 5) +
+        ' C ' + (cx - 88) + ' ' + (trunkBaseY - 80) + ', ' + (cx - 62) + ' ' + (trunkBaseY - 200) + ', ' + (cx - 48) + ' ' + (trunkTop + 90) +
+        ' C ' + (cx - 44) + ' ' + (trunkTop + 40) + ', ' + (cx - 36) + ' ' + (trunkTop + 12) + ', ' + (cx - 28) + ' ' + trunkTop +
+        ' L ' + (cx + 28) + ' ' + trunkTop +
+        ' C ' + (cx + 36) + ' ' + (trunkTop + 12) + ', ' + (cx + 44) + ' ' + (trunkTop + 40) + ', ' + (cx + 48) + ' ' + (trunkTop + 90) +
+        ' C ' + (cx + 62) + ' ' + (trunkBaseY - 200) + ', ' + (cx + 92) + ' ' + (trunkBaseY - 80) + ', ' + (cx + 65) + ' ' + (trunkBaseY + 5) + ' Z';
+      svgParts.push('<path d="' + trunkPath + '" fill="url(#trunkGrad)" />');
+      svgParts.push('<path d="' + trunkPath + '" fill="url(#trunkHi)" />');
+      for (var tti = 0; tti < 24; tti++) {
+        var ttx = cx + (Math.random() - 0.5) * 100;
+        var tty = trunkTop + 30 + Math.random() * (trunkBaseY - trunkTop - 50);
+        var ttw = 4 + Math.random() * 10;
+        var tth = 12 + Math.random() * 22;
+        svgParts.push('<ellipse cx="' + ttx + '" cy="' + tty + '" rx="' + (ttw/2) + '" ry="' + (tth/2) + '" fill="rgba(0,0,0,0.35)" />');
+      }
+      svgParts.push('<path d="M ' + (cx - 6) + ' ' + (trunkTop + 50) + ' Q ' + (cx + 4) + ' ' + ((trunkTop + trunkBaseY) / 2) + ' ' + (cx - 2) + ' ' + (trunkBaseY - 30) + '" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" fill="none" />');
+      svgParts.push('<path d="M ' + (cx + 14) + ' ' + (trunkTop + 70) + ' Q ' + (cx + 16) + ' ' + ((trunkTop + trunkBaseY) / 2 + 50) + ', ' + (cx + 14) + ' ' + (trunkBaseY - 50) + '" stroke="rgba(255,200,140,0.14)" stroke-width="1.3" fill="none" />');
+      svgParts.push('<ellipse cx="' + (cx - 32) + '" cy="' + (trunkBaseY - 100) + '" rx="10" ry="13" fill="rgba(0,0,0,0.45)" />');
+      svgParts.push('<ellipse cx="' + (cx - 32) + '" cy="' + (trunkBaseY - 100) + '" rx="6" ry="8" fill="rgba(255,200,140,0.12)" />');
+      svgParts.push('<ellipse cx="' + (cx + 38) + '" cy="' + (trunkBaseY - 200) + '" rx="8" ry="10" fill="rgba(0,0,0,0.4)" />');
+
+      // ---- 后层枝条 ----
+      svgParts.push('<g class="branch-layer branch-layer--far">');
+      allBranches.filter(function(b) { return b.layer === 'far'; }).forEach(function(b) {
+        svgParts.push('  <path d="' + b.path + '" stroke="#1F1208" stroke-width="' + (b.width * 0.55).toFixed(1) + '" fill="none" stroke-linecap="round" opacity="0.55" />');
+      });
+      svgParts.push('</g>');
+
+      // ---- 中层枝条 ----
+      svgParts.push('<g class="branch-layer branch-layer--mid">');
+      allBranches.filter(function(b) { return b.layer === 'mid'; }).forEach(function(b) {
+        var stroke = b.depth === 0 ? '#5A331B' : '#6B3D1F';
+        svgParts.push('  <path d="' + b.path + '" stroke="' + stroke + '" stroke-width="' + (b.width * 0.78).toFixed(1) + '" fill="none" stroke-linecap="round" opacity="0.78" />');
+      });
+      svgParts.push('</g>');
+
+      // ---- 前层枝条 ----
+      svgParts.push('<g class="branch-layer branch-layer--near">');
+      allBranches.filter(function(b) { return b.layer === 'near'; }).forEach(function(b) {
+        var stroke = b.depth === 0 ? '#7A4A26' : '#5A331B';
+        svgParts.push('  <path d="' + b.path + '" stroke="' + stroke + '" stroke-width="' + b.width.toFixed(1) + '" fill="none" stroke-linecap="round" />');
+      });
+      svgParts.push('</g>');
+
+      // 9. 为每个 idea 生成对话气泡
+      // 气泡形状生成函数 - 尾巴方向随机，更自然
+      function makeBubblePath(shape, w, h, tailAngle) {
+        var hw = w / 2, hh = h / 2;
+        // 尾巴长度和角度随机
+        var tailLen = 8 + Math.random() * 8;
+        var tailSpread = 0.3 + Math.random() * 0.4;
+        
+        // 根据尾巴角度计算尾巴终点
+        var tailEndX = Math.cos(tailAngle) * (Math.min(hw, hh) + tailLen);
+        var tailEndY = Math.sin(tailAngle) * (Math.min(hw, hh) + tailLen);
+        var tailBaseX = Math.cos(tailAngle) * Math.min(hw, hh) * 0.85;
+        var tailBaseY = Math.sin(tailAngle) * Math.min(hw, hh) * 0.85;
+        
+        // 尾巴两侧控制点
+        var tailAngle1 = tailAngle - tailSpread;
+        var tailAngle2 = tailAngle + tailSpread;
+        var tailMidX = Math.cos(tailAngle) * (Math.min(hw, hh) + tailLen * 0.6);
+        var tailMidY = Math.sin(tailAngle) * (Math.min(hw, hh) + tailLen * 0.6);
+        
+        switch (shape) {
+          case 'ellipse':
+            // 椭圆气泡 + 自然尾巴
+            return 'M ' + (-hw) + ' 0' +
+              ' A ' + hw + ' ' + hh + ' 0 1 1 ' + hw + ' 0' +
+              ' A ' + hw + ' ' + hh + ' 0 1 1 ' + (-hw) + ' 0 Z' +
+              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
+              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
+              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
+          case 'roundedRect':
+            var r = Math.min(hw, hh) * 0.35;
+            return 'M ' + (-hw + r) + ' ' + (-hh) +
+              ' L ' + (hw - r) + ' ' + (-hh) +
+              ' A ' + r + ' ' + r + ' 0 0 1 ' + hw + ' ' + (-hh + r) +
+              ' L ' + hw + ' ' + (hh - r) +
+              ' A ' + r + ' ' + r + ' 0 0 1 ' + (hw - r) + ' ' + hh +
+              ' L ' + (-hw + r) + ' ' + hh +
+              ' A ' + r + ' ' + r + ' 0 0 1 ' + (-hw) + ' ' + (hh - r) +
+              ' L ' + (-hw) + ' ' + (-hh + r) +
+              ' A ' + r + ' ' + r + ' 0 0 1 ' + (-hw + r) + ' ' + (-hh) + ' Z' +
+              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
+              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
+              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
+          case 'cloud':
+            // 云朵形状（多个圆弧拼接）
+            var cr = Math.min(hw, hh) * 0.45;
+            return 'M ' + (-hw + cr * 0.5) + ' ' + (hh * 0.3) +
+              ' A ' + cr + ' ' + cr + ' 0 0 1 ' + (-hw + cr * 0.3) + ' ' + (-hh * 0.4) +
+              ' A ' + (cr * 1.1) + ' ' + (cr * 1.1) + ' 0 0 1 ' + (hw * 0.1) + ' ' + (-hh - cr * 0.3) +
+              ' A ' + (cr * 0.9) + ' ' + (cr * 0.9) + ' 0 0 1 ' + (hw - cr * 0.2) + ' ' + (-hh * 0.5) +
+              ' A ' + cr + ' ' + cr + ' 0 0 1 ' + (hw + cr * 0.3) + ' ' + (hh * 0.2) +
+              ' A ' + (cr * 0.8) + ' ' + (cr * 0.8) + ' 0 0 1 ' + (hw * 0.5) + ' ' + (hh + cr * 0.2) +
+              ' A ' + (cr * 0.7) + ' ' + (cr * 0.7) + ' 0 0 1 ' + (-hw * 0.3) + ' ' + (hh + cr * 0.15) +
+              ' A ' + (cr * 0.9) + ' ' + (cr * 0.9) + ' 0 0 1 ' + (-hw + cr * 0.5) + ' ' + (hh * 0.3) + ' Z' +
+              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
+              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
+              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
+          case 'starBurst':
+            // 星形爆炸气泡
+            var pts = 8;
+            var outerR = Math.min(hw, hh);
+            var innerR = outerR * 0.6;
+            var d = '';
+            for (var si = 0; si < pts * 2; si++) {
+              var sa = (si / (pts * 2)) * Math.PI * 2 - Math.PI / 2;
+              var sr = si % 2 === 0 ? outerR : innerR;
+              var sx = Math.cos(sa) * sr;
+              var sy = Math.sin(sa) * sr;
+              d += (si === 0 ? 'M ' : ' L ') + sx.toFixed(1) + ' ' + sy.toFixed(1);
+            }
+            d += ' Z';
+            // 小尾巴
+            d += ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
+              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
+              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
+            return d;
+          case 'circle':
+            var cr2 = Math.min(hw, hh);
+            return 'M ' + 0 + ' ' + (-cr2) +
+              ' A ' + cr2 + ' ' + cr2 + ' 0 1 1 ' + 0 + ' ' + cr2 +
+              ' A ' + cr2 + ' ' + cr2 + ' 0 1 1 ' + 0 + ' ' + (-cr2) + ' Z' +
+              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
+              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
+              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
+          case 'smallDot':
+            var dr = Math.min(hw, hh) * 0.7;
+            return 'M ' + 0 + ' ' + (-dr) +
+              ' A ' + dr + ' ' + dr + ' 0 1 1 ' + 0 + ' ' + dr +
+              ' A ' + dr + ' ' + dr + ' 0 1 1 ' + 0 + ' ' + (-dr) + ' Z';
+          default:
+            return 'M ' + (-hw) + ' ' + (-hh) + ' L ' + hw + ' ' + (-hh) + ' L ' + hw + ' ' + hh + ' L ' + (-hw) + ' ' + hh + ' Z';
+        }
+      }
+
+      var farBubbles = [];
+      var midBubbles = [];
+      var nearBubbles = [];
+
+      shuffled.forEach(function(idea, idx) {
+        if (idx >= usedSpots.length) return;
+        var cat = getCategoryFromIdea(idea);
+        var spot = usedSpots[idx];
+        var color = bubbleColors[cat] || bubbleColors.user;
+        var layer = spot.layer;
+        var finalLayer = layer;
+        if (layer === 'near' && Math.random() < 0.2) finalLayer = 'mid';
+        if (layer === 'mid' && Math.random() < 0.15) finalLayer = 'far';
+
+        // 气泡尺寸（根据层级和随机）
+        var baseScale = finalLayer === 'far' ? 0.55 : finalLayer === 'mid' ? 0.78 : 1.0;
+        var sizeVar = 0.7 + Math.random() * 0.6; // 0.7 ~ 1.3
+        var bubbleW = (36 + Math.random() * 50) * sizeVar * baseScale;  // 36~86
+        var bubbleH = (28 + Math.random() * 36) * sizeVar * baseScale;  // 28~64
+
+        // 气泡形状（小尺寸更倾向圆点/小圆）
+        var shape;
+        if (bubbleW < 30) {
+          shape = 'smallDot';
+        } else {
+          // 按分类偏好形状
+          var shapeRoll = Math.random();
+          if (cat === 'system') {
+            shape = shapeRoll < 0.35 ? 'ellipse' : shapeRoll < 0.6 ? 'roundedRect' : shapeRoll < 0.8 ? 'starBurst' : 'cloud';
+          } else if (cat === 'hot') {
+            shape = shapeRoll < 0.3 ? 'roundedRect' : shapeRoll < 0.55 ? 'ellipse' : shapeRoll < 0.8 ? 'starBurst' : 'circle';
+          } else if (cat === 'user') {
+            shape = shapeRoll < 0.3 ? 'cloud' : shapeRoll < 0.55 ? 'ellipse' : shapeRoll < 0.8 ? 'roundedRect' : 'circle';
+          } else {
+            shape = shapeRoll < 0.3 ? 'circle' : shapeRoll < 0.55 ? 'smallDot' : shapeRoll < 0.8 ? 'ellipse' : 'roundedRect';
+          }
+        }
+
+        // 计算尾巴角度：指向树枝方向（从气泡指向挂点的反方向）
+        var tailAngle = spot.parentAngle + Math.PI + (Math.random() - 0.5) * 0.6;
+        
+        var bubblePath = makeBubblePath(shape, bubbleW, bubbleH, tailAngle);
+
+        // 位置：挂在树枝挂点附近，稍微偏移
+        var offsetX = (Math.random() - 0.5) * 30;
+        var offsetY = (Math.random() - 0.5) * 20;
+        var bx = spot.x + offsetX;
+        var by = spot.y + offsetY;
+
+        // 轻微旋转（让气泡更自然）
+        var rot = (Math.random() - 0.5) * 15;
+
+        var opacity = finalLayer === 'far' ? 0.55 : finalLayer === 'mid' ? 0.82 : 1.0;
+        var filterAttr = finalLayer === 'far' ? ' filter="url(#bubbleFar)"' : ' filter="url(#bubbleShadow)"';
+        var layerClass = 'idea-bubble idea-bubble--' + finalLayer;
+
+        // 气泡内的文字（短标题）
+        var rawTitle = String(idea.title || '');
+        var shortTitle = rawTitle.length > 5 ? rawTitle.substring(0, 5) : rawTitle;
+        var fontSize = Math.max(9, Math.min(13, bubbleW * 0.22));
+
+        var onclickAttr = ' onclick="window.openIdeaTag(\'' + esc(idea.title) + '\',\'' + esc(idea.content || '') + '\',' + (cat === 'system' ? 'true' : 'false') + ',\'' + esc(idea.id) + '\')"';
+
+        var bubble = '<g class="' + layerClass + '" data-cat="' + cat + '"' +
+          ' transform="translate(' + bx.toFixed(1) + ',' + by.toFixed(1) + ') rotate(' + rot.toFixed(1) + ')"' +
+          ' style="opacity:' + opacity + '"' + onclickAttr + filterAttr + '>' +
+          '<path d="' + bubblePath + '" fill="' + color.fill + '" stroke="' + color.stroke + '" stroke-width="1.2" />' +
+          (shortTitle ? '<text x="0" y="' + (fontSize * 0.35) + '" text-anchor="middle" font-size="' + fontSize.toFixed(1) + '" font-weight="700" fill="' + color.text + '" style="pointer-events:none; font-family: inherit">' + esc(shortTitle) + '</text>' : '') +
+          '</g>';
+
+        if (finalLayer === 'far') farBubbles.push(bubble);
+        else if (finalLayer === 'mid') midBubbles.push(bubble);
+        else nearBubbles.push(bubble);
+      });
+
+      // 渲染气泡（远→中→近）
+      svgParts.push('<g class="bubble-layer bubble-layer--far">');
+      farBubbles.forEach(function(b) { svgParts.push('  ' + b); });
+      svgParts.push('</g>');
+
+      svgParts.push('<g class="bubble-layer bubble-layer--mid">');
+      midBubbles.forEach(function(b) { svgParts.push('  ' + b); });
+      svgParts.push('</g>');
+
+      svgParts.push('<g class="bubble-layer bubble-layer--near">');
+      nearBubbles.forEach(function(b) { svgParts.push('  ' + b); });
+      svgParts.push('</g>');
+
+      svgParts.push('</svg>');
+
+      container.innerHTML = svgParts.join('');
+
+      // 15. 统计
+      var statsEl = document.getElementById('ideaStats');
+      if (statsEl) {
+        var showCount = filtered.length;
+        var totalCount = list.length;
+        var catLabel = currentIdeaCategory === 'all' ? '全部' :
+                       currentIdeaCategory === 'system' ? '系统精选' :
+                       currentIdeaCategory === 'hot' ? '热门项目' :
+                       currentIdeaCategory === 'user' ? '客户发起' : '最新创意';
+        statsEl.innerHTML = '<span>🌳 创意树上挂着 <strong style="color:#fff">' + showCount + '</strong> 条创意 / 共 ' + totalCount + ' 条</span>' +
+          '<span style="color:rgba(255,255,255,0.4)">分类: ' + catLabel + '</span>' +
+          '<span style="color:rgba(255,255,255,0.4)">' +
+            '<span style="color:#FF6B6B">●</span> ' + cats.system + ' 精选 · ' +
+            '<span style="color:#FFB066">●</span> ' + cats.hot + ' 热门 · ' +
+            '<span style="color:#7DDFA0">●</span> ' + cats.user + ' 发起 · ' +
+            '<span style="color:#7FB8FF">●</span> ' + cats.fresh + ' 最新' +
+          '</span>';
+      }
+    }
+
+    // 初始加载：先从缓存渲染，再从后端同步
+    var cached = getCachedIdeas();
+    if (cached.length) {
+      renderTags(cached);
+    }
+
+    // 从后端同步数据
+    if (API_BASE) {
+      fetch(API_BASE + '/api/ideas').then(function (r) { return r.json(); }).then(function (remoteList) {
+        if (remoteList && remoteList.length) {
+          saveIdeas(remoteList);
+          renderTags(getIdeas());
+        }
+      }).catch(function () {});
+    }
+
+    // 提交新点子
+    var ideaForm = document.getElementById('ideaForm');
+    if (ideaForm) {
+      ideaForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var title = document.getElementById('ideaTitle').value.trim();
+        var content = document.getElementById('ideaContent').value.trim();
+        if (!title || !content) return;
+
+        var newIdea = {
+          id: 'u' + Date.now(),
+          title: title,
+          content: content,
+          category: 'user',
+          createdAt: new Date().toISOString()
+        };
+
+        var list = getIdeas();
+        list.push(newIdea);
+        saveIdeas(list);
+        renderTags(list);
+
+        // 同步到后端
+        if (API_BASE) {
+          fetch(API_BASE + '/api/ideas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newIdea)
+          }).catch(function () {});
+        }
+
+        ideaForm.reset();
+        alert('创意已挂上树梢！');
+      });
+    }
+  })();
+
+
+  /* ========== 案例（Cases）加载 ========== */
+  (function loadCases() {
+    var grid = document.getElementById('casesGrid');
+    if (!grid) return;
+    var cacheKey = 'tcai_cases_cache';
+    var render = function (list) {
+      if (!list || !list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--c-white-50)">暂无案例</div>';
+        return;
+      }
+      grid.innerHTML = list.map(function (c) {
+        return '<div class="case-card">' +
+          '<span class="case-card__tag">' + escHtml(c.tag || '') + '</span>' +
+          '<h3 class="case-card__title">' + escHtml(c.title) + '</h3>' +
+          '<p class="case-card__desc">' + escHtml(c.description || '') + '</p>' +
+          '<div class="case-card__result">' +
+            '<span class="case-card__result-label">成果</span>' +
+            '<span>' + escHtml(c.result || '') + '</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    };
+    function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // 先读缓存
+    try {
+      var cached = JSON.parse(localStorage.getItem(cacheKey));
+      if (cached && cached.length) render(cached);
+    } catch (e) {}
+
+    // 从后端拉取
+    var API = '';
+    if (API) {
+      fetch(API + '/api/cases').then(function (r) { return r.json(); }).then(function (list) {
+        if (list && list.length) {
+          try { localStorage.setItem(cacheKey, JSON.stringify(list)); } catch (e) {}
+          render(list);
+        }
+      }).catch(function () {});
+    }
+  })();
+
+
+  /* ========== 提交项目 ========== */
+  (function initSubmit() {
+    var form = document.getElementById('submitForm');
+    if (!form) return;
+    var SUBMIT_KEY = 'tcai_submissions_v1';
 
       var fileInput = document.getElementById('submitFiles');
       var filePreview = document.getElementById('submitFilePreview');
@@ -1280,39 +1336,5 @@
         '</div>';
       });
     })();
-
-    // ===== 案例（Cases）加载 =====
-    (function loadCases() {
-      var grid = document.getElementById('casesGrid');
-      if (!grid) return;
-      var cacheKey = 'tcai_cases_cache';
-      var render = function (list) {
-        if (!list || !list.length) {
-          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--c-white-50)">暂无案例</div>';
-          return;
-        }
-        grid.innerHTML = list.map(function (c) {
-          return '<div class="case-card">' +
-            '<span class="case-card__tag">' + escHtml(c.tag || '') + '</span>' +
-            '<h3 class="case-card__title">' + escHtml(c.title) + '</h3>' +
-            '<p class="case-card__desc">' + escHtml(c.description || '') + '</p>' +
-            '<div class="case-card__result">' +
-            '<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-            '<span>' + escHtml(c.result || '') + '</span></div></div>';
-        }).join('');
-      };
-      function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-      // Try API first
-      fetch((API_BASE || '') + '/api/cases').then(function (r) { return r.json(); }).then(function (data) {
-        if (Array.isArray(data) && data.length) { render(data); try { localStorage.setItem(cacheKey, JSON.stringify(data)); } catch(e){} return; }
-        throw new Error('empty');
-      }).catch(function () {
-        var cached = []; try { var raw = localStorage.getItem(cacheKey); if (raw) cached = JSON.parse(raw); } catch(e) {}
-        if (cached.length) render(cached);
-      });
-    })();
-
-    createAdminUI();
-  })();
 
 })();
