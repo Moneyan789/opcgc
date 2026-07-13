@@ -32,7 +32,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=constellation6">
 </head>
 <body>
 
@@ -68,6 +68,7 @@
         <a href="#services" class="nav__link">服务</a>
         <a href="#faq" class="nav__link">FAQ</a>
         <a href="#submit" class="nav__link">点子</a>
+        <a href="/opc-paikelai-notes.html" class="nav__link">项目笔记</a>
         <a href="#join" class="nav__link nav__link--cta">免费加入</a>
       </nav>
 
@@ -87,6 +88,7 @@
       <a href="#services" class="nav__m-link">核心服务</a>
       <a href="#faq" class="nav__m-link">常见问题</a>
       <a href="#submit" class="nav__m-link">提交点子</a>
+      <a href="/opc-paikelai-notes.html" class="nav__m-link">项目笔记</a>
       <a href="#join" class="nav__m-link nav__m-link--cta">免费加入商圈</a>
     </div>
   </header>
@@ -511,6 +513,46 @@
     </div>
   </section>
 
+  <!-- ===== 创意树 ===== -->
+  <section class="section section--ideas" id="ideas">
+    <div class="container container--wide">
+      <div class="section__head" data-animate>
+        <span class="section__tag">CREATIVE TREE</span>
+        <h2 class="section__title">同城<span class="text-orange">创意树</span></h2>
+        <p class="section__sub">把每一位伙伴的灵感挂上枝头，红色精选、橙色热门、绿色发起、蓝色最新</p>
+      </div>
+
+      <!-- 分类筛选 -->
+      <div class="idea-cat" data-animate>
+        <button class="idea-cat__btn active" data-cat="all"><span id="catCountAll">0</span> 全部</button>
+        <button class="idea-cat__btn" data-cat="system"><span id="catCountSystem">0</span> 系统精选</button>
+        <button class="idea-cat__btn" data-cat="hot"><span id="catCountHot">0</span> 热门项目</button>
+        <button class="idea-cat__btn" data-cat="user"><span id="catCountUser">0</span> 客户发起</button>
+        <button class="idea-cat__btn" data-cat="fresh"><span id="catCountFresh">0</span> 最新创意</button>
+      </div>
+
+      <!-- 创意树画布 -->
+      <div class="idea-tree" data-animate>
+        <div class="idea-tree__canvas" id="ideaTagsContainer"></div>
+      </div>
+
+      <!-- 统计信息 -->
+      <div class="idea-stats" id="ideaStats"></div>
+    </div>
+
+    <!-- 点子详情弹窗（含认领功能） -->
+    <div class="idea-overlay" id="ideaTagOverlay" style="display:none">
+      <div class="idea-overlay__card">
+        <button class="idea-overlay__close" onclick="window.closeIdeaTag()" aria-label="关闭">&times;</button>
+        <span class="idea-overlay__badge" id="expandedBadge">系统精选</span>
+        <h3 class="idea-overlay__title" id="expandedTitle"></h3>
+        <p class="idea-overlay__content" id="expandedContent"></p>
+        <button class="btn btn--primary idea-overlay__claim" onclick="window.claimIdea()">认领此项目</button>
+        <p class="idea-overlay__claim-note">认领后将有专人联系你推进项目落地</p>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== 提交项目 ===== -->
   <section class="section section--submit" id="submit">
     <div class="container container--md">
@@ -643,7 +685,27 @@
           </ul>
         </div>
 
-        <div class="cta-qr-area">
+        <div class="cta-qr-area" id="ctaQrArea">
+          <div class="qr-item">
+            <div class="qr-box">
+              <img class="qr-code" id="founderQr" src="" alt="创始人微信" style="display:none">
+              <div class="qr-placeholder" id="founderQrPlaceholder">
+                <svg viewBox="0 0 24 24" fill="none" style="width:48px;height:48px;color:#ccc"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><path d="M14 14h7v7h-7zM17 17h1v1h-1zM14 17h1v1h-1zM17 14h1v1h-1z" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+              <div class="qr-scan-line"></div>
+            </div>
+            <span class="cta-qr-label cta-qr-label--founder">创始人微信</span>
+          </div>
+          <div class="qr-item">
+            <div class="qr-box">
+              <img class="qr-code" id="groupQr" src="" alt="社群入群码" style="display:none">
+              <div class="qr-placeholder" id="groupQrPlaceholder">
+                <svg viewBox="0 0 24 24" fill="none" style="width:48px;height:48px;color:#ccc"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><path d="M14 14h7v7h-7zM17 17h1v1h-1zM14 17h1v1h-1zM17 14h1v1h-1z" stroke="currentColor" stroke-width="2"/></svg>
+              </div>
+              <div class="qr-scan-line"></div>
+            </div>
+            <span class="cta-qr-label cta-qr-label--group">社群入群码</span>
+          </div>
         </div>
       </div>
     </div>

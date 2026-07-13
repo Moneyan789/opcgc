@@ -451,122 +451,52 @@
       }).join('');
     }
 
-    // 管理后台
-    var adminOverlay = document.getElementById('adminOverlay');
-    var adminLogin = document.getElementById('adminLogin');
-    var adminPanel = document.getElementById('adminPanel');
-    var adminList = document.getElementById('adminList');
-    var adminForm = document.getElementById('adminForm');
-
-    function openAdmin() {
-      if (adminOverlay) adminOverlay.style.display = 'flex';
-    }
-    function closeAdmin() {
-      if (adminOverlay) adminOverlay.style.display = 'none';
-      if (adminLogin) adminLogin.style.display = 'block';
-      if (adminPanel) adminPanel.style.display = 'none';
+    // 管理后台入口 - 跳转到独立admin页面
+    var adminTrigger = document.getElementById('adminTrigger');
+    if (adminTrigger) {
+      adminTrigger.addEventListener('click', function () {
+        window.open('/admin.html', '_blank');
+      });
     }
 
-    function showAdminPanel() {
-      if (adminLogin) adminLogin.style.display = 'none';
-      if (adminPanel) adminPanel.style.display = 'block';
-      renderAdminList();
-    }
-
-    function renderAdminList() {
-      if (!adminList) return;
-      var list = getProjects();
-      adminList.innerHTML = list.map(function (p, idx) {
-        return '<div class="admin-item" data-idx="' + idx + '">' +
-          '<div class="admin-item__info">' +
-            '<strong>' + escapeHtml(p.name) + '</strong>' +
-            '<span>' + escapeHtml(p.status || '进行中') + '</span>' +
-          '</div>' +
-          '<div class="admin-item__actions">' +
-            '<button class="admin-btn admin-btn--edit" onclick="window._editProject(' + idx + ')">编辑</button>' +
-            '<button class="admin-btn admin-btn--del" onclick="window._delProject(' + idx + ')">删除</button>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-    }
-
-    window._editProject = function (idx) {
-      var list = getProjects();
-      var p = list[idx];
-      if (!p) return;
-      if (adminForm) {
-        document.getElementById('adminId').value = p.id || '';
-        document.getElementById('adminName').value = p.name || '';
-        document.getElementById('adminDesc').value = p.desc || '';
-        document.getElementById('adminLink').value = p.link || '';
-        document.getElementById('adminContact').value = p.contact || '';
-        document.getElementById('adminQrcode').value = p.qrcode || '';
-        document.getElementById('adminQrcode2').value = p.qrcode2 || '';
-        document.getElementById('adminStatus').value = p.status || '';
-        document.getElementById('adminStatusClass').value = p.statusClass || '';
-        adminForm.dataset.editIdx = idx;
-      }
-    };
-
-    window._delProject = function (idx) {
-      if (!confirm('确定删除此项目？')) return;
-      var list = getProjects();
-      list.splice(idx, 1);
-      saveProjects(list);
-      renderAdminList();
-      renderProjects();
-    };
-
-    // 绑定事件
-    var adminBtn = document.getElementById('adminBtn');
-    if (adminBtn) adminBtn.addEventListener('click', openAdmin);
-
-    var adminClose = document.getElementById('adminClose');
-    if (adminClose) adminClose.addEventListener('click', closeAdmin);
-
-    var adminLoginSubmit = document.getElementById('adminLoginSubmit');
-    if (adminLoginSubmit) {
-      adminLoginSubmit.addEventListener('click', function () {
-        var pwd = document.getElementById('adminPwd').value;
-        _checkPassword(pwd).then(function (ok) {
-          if (ok) {
-            showAdminPanel();
-          } else {
-            alert('密码错误');
+    // 底部二维码 - 从后台API读取
+    function updateFooterQr() {
+      try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/api/faq-qr', true);
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              // qr1 = 社群入群码, qr2 = 创始人微信
+              if (data.qr1) {
+                var groupImg = document.getElementById('groupQr');
+                var groupPlaceholder = document.getElementById('groupQrPlaceholder');
+                if (groupImg) { groupImg.src = data.qr1; groupImg.style.display = 'block'; }
+                if (groupPlaceholder) groupPlaceholder.style.display = 'none';
+              }
+              if (data.qr2) {
+                var founderImg = document.getElementById('founderQr');
+                var founderPlaceholder = document.getElementById('founderQrPlaceholder');
+                if (founderImg) { founderImg.src = data.qr2; founderImg.style.display = 'block'; }
+                if (founderPlaceholder) founderPlaceholder.style.display = 'none';
+              }
+              // 更新标签文字
+              if (data.label1) {
+                var l1 = document.querySelector('.cta-qr-label--group');
+                if (l1) l1.textContent = data.label1;
+              }
+              if (data.label2) {
+                var l2 = document.querySelector('.cta-qr-label--founder');
+                if (l2) l2.textContent = data.label2;
+              }
+            } catch (e) {}
           }
-        });
-      });
-    }
-
-    if (adminForm) {
-      adminForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        var list = getProjects();
-        var idx = parseInt(adminForm.dataset.editIdx || '-1', 10);
-        var proj = {
-          id: document.getElementById('adminId').value.trim() || ('p' + Date.now()),
-          name: document.getElementById('adminName').value.trim(),
-          desc: document.getElementById('adminDesc').value.trim(),
-          link: document.getElementById('adminLink').value.trim(),
-          contact: document.getElementById('adminContact').value.trim(),
-          qrcode: document.getElementById('adminQrcode').value.trim(),
-          qrcode2: document.getElementById('adminQrcode2').value.trim(),
-          status: document.getElementById('adminStatus').value.trim(),
-          statusClass: document.getElementById('adminStatusClass').value.trim()
         };
-        if (!proj.name) return;
-        if (idx >= 0) {
-          list[idx] = proj;
-        } else {
-          list.push(proj);
-        }
-        saveProjects(list);
-        renderAdminList();
-        renderProjects();
-        adminForm.reset();
-        adminForm.dataset.editIdx = '';
-      });
+        xhr.send();
+      } catch (e) {}
     }
+    updateFooterQr();
 
     // 分类筛选
     var filterBtns = document.querySelectorAll('.project-filter__btn');
@@ -599,14 +529,64 @@
       { id: 'sys2', title: '短视频自动生成', content: '基于 AI 的短视频批量生成工具，适合电商、餐饮、教育等行业快速产出营销素材。', category: 'system', isSystem: true, createdAt: '2026-07-02T14:30:00Z' },
       { id: 'sys3', title: '本地生活小程序', content: '整合同城餐饮、娱乐、购物、家政等服务的一站式小程序平台。', category: 'system', isSystem: true, createdAt: '2026-07-03T09:15:00Z' },
       { id: 'sys4', title: 'AI 辅助设计', content: '为中小企业提供 AI 辅助的 Logo、海报、包装设计服务，降低设计成本。', category: 'system', isSystem: true, createdAt: '2026-07-04T16:45:00Z' },
-      { id: 'sys5', title: '智能排班系统', content: '针对餐饮、零售等行业的 AI 智能排班工具，优化人力成本。', category: 'system', isSystem: true, createdAt: '2026-07-05T11:20:00Z' }
+      { id: 'sys5', title: '智能排班系统', content: '针对餐饮、零售等行业的 AI 智能排班工具，优化人力成本。', category: 'system', isSystem: true, createdAt: '2026-07-05T11:20:00Z' },
+      { id: 'sys6', title: 'AI 营销文案', content: '一键生成朋友圈文案、小红书笔记、电商详情页，支持多风格切换。', category: 'system', isSystem: true, createdAt: '2026-07-05T12:00:00Z' },
+      { id: 'sys7', title: '智能数据看板', content: '为商家提供销售、客流、库存等多维度数据可视化与 AI 洞察。', category: 'system', isSystem: true, createdAt: '2026-07-05T13:00:00Z' },
+      { id: 'sys8', title: 'AI 合同审查', content: '自动审查合同条款风险，标注异常条款，降低法务成本。', category: 'system', isSystem: true, createdAt: '2026-07-05T14:00:00Z' },
+      { id: 'sys9', title: '智能招聘助手', content: 'AI 筛选简历、自动面试邀约、岗位匹配度分析，提升招聘效率。', category: 'system', isSystem: true, createdAt: '2026-07-05T15:00:00Z' },
+      { id: 'sys10', title: 'AI 财税代账', content: '智能识别票据、自动生成凭证、一键报税，降低代理记账成本。', category: 'system', isSystem: true, createdAt: '2026-07-05T16:00:00Z' },
+      { id: 'sys11', title: 'AI 语音转写', content: '会议录音实时转文字，自动提取关键决议和待办事项。', category: 'system', isSystem: true, createdAt: '2026-07-05T17:00:00Z' },
+      { id: 'sys12', title: '智能培训平台', content: 'AI 生成课程内容、智能出题、学习路径个性化推荐。', category: 'system', isSystem: true, createdAt: '2026-07-05T18:00:00Z' },
+      { id: 'sys13', title: 'AI 选品工具', content: '基于大数据分析趋势商品，为电商卖家提供选品建议。', category: 'system', isSystem: true, createdAt: '2026-07-06T09:00:00Z' }
     ];
 
     // 热门项目点子
     var hotIdeas = [
       { id: 'hot1', title: '社区团购平台', content: '基于 LBS 的社区团购小程序，支持团长管理、订单分拣、配送路线优化。', category: 'hot', createdAt: '2026-07-06T08:00:00Z' },
       { id: 'hot2', title: 'AI 英语陪练', content: '面向 K12 学生的 AI 英语口语陪练应用，支持发音纠正、情景对话。', category: 'hot', createdAt: '2026-07-06T12:30:00Z' },
-      { id: 'hot3', title: '宠物服务平台', content: '整合宠物寄养、美容、医疗、用品的一站式本地服务平台。', category: 'hot', createdAt: '2026-07-07T15:00:00Z' }
+      { id: 'hot3', title: '宠物服务平台', content: '整合宠物寄养、美容、医疗、用品的一站式本地服务平台。', category: 'hot', createdAt: '2026-07-07T15:00:00Z' },
+      { id: 'hot4', title: 'AI 健康管理', content: '个人健康数据追踪 + AI 饮食运动建议，连接本地医疗资源。', category: 'hot', createdAt: '2026-07-07T16:00:00Z' },
+      { id: 'hot5', title: '同城二手交易', content: '基于社区的二手物品交易平台，支持验货、议价、当面交易。', category: 'hot', createdAt: '2026-07-08T09:00:00Z' },
+      { id: 'hot6', title: 'AI 写作助手', content: '公文写作、方案策划、创意文案，一键生成专业文档。', category: 'hot', createdAt: '2026-07-08T10:00:00Z' },
+      { id: 'hot7', title: '本地家政预约', content: '家政服务在线预约平台，AI 智能匹配服务人员。', category: 'hot', createdAt: '2026-07-08T11:00:00Z' },
+      { id: 'hot8', title: 'AI 简历优化', content: '智能简历诊断、一键优化、岗位匹配度评分。', category: 'hot', createdAt: '2026-07-08T12:00:00Z' },
+      { id: 'hot9', title: '智能停车系统', content: '车位实时查询、预约停车、无感支付，覆盖全城停车场。', category: 'hot', createdAt: '2026-07-08T13:00:00Z' },
+      { id: 'hot10', title: 'AI 情感分析', content: '用户评论情感分析工具，帮助商家洞察口碑趋势。', category: 'hot', createdAt: '2026-07-08T14:00:00Z' },
+      { id: 'hot11', title: '同城跑腿服务', content: '即时跑腿代买代送，AI 路径规划优化配送效率。', category: 'hot', createdAt: '2026-07-08T15:00:00Z' },
+      { id: 'hot12', title: 'AI 电商客服', content: '智能客服+订单跟踪+退换货处理，降低电商人力成本。', category: 'hot', createdAt: '2026-07-08T16:00:00Z' },
+      { id: 'hot13', title: '智慧门店系统', content: '客流统计+热力图+智能推荐，线下门店数字化运营。', category: 'hot', createdAt: '2026-07-08T17:00:00Z' }
+    ];
+
+    // 客户发起点子
+    var userIdeas = [
+      { id: 'usr1', title: '装修报价助手', content: 'AI 根据户型图自动生成装修报价方案，透明化价格。', category: 'user', createdAt: '2026-07-09T08:00:00Z' },
+      { id: 'usr2', title: '本地美食地图', content: '基于 AI 的美食推荐+导航，发现身边隐藏好店。', category: 'user', createdAt: '2026-07-09T09:00:00Z' },
+      { id: 'usr3', title: '智能快递柜', content: '社区智能快递柜+AI 分拣+到件通知，提升末端配送效率。', category: 'user', createdAt: '2026-07-09T10:00:00Z' },
+      { id: 'usr4', title: 'AI 证件照', content: '手机自拍一键生成标准证件照，支持多种规格。', category: 'user', createdAt: '2026-07-09T11:00:00Z' },
+      { id: 'usr5', title: '邻里互助平台', content: '社区邻里间的互助信息发布与匹配平台。', category: 'user', createdAt: '2026-07-09T12:00:00Z' },
+      { id: 'usr6', title: 'AI 面试模拟', content: 'AI 扮演面试官，智能提问并给出表现评分。', category: 'user', createdAt: '2026-07-09T13:00:00Z' },
+      { id: 'usr7', title: '同城活动日历', content: '整合同城演出、展览、市集等活动信息，智能推荐。', category: 'user', createdAt: '2026-07-09T14:00:00Z' },
+      { id: 'usr8', title: 'AI 美甲设计', content: '上传手部照片，AI 生成美甲方案并预约服务。', category: 'user', createdAt: '2026-07-09T15:00:00Z' },
+      { id: 'usr9', title: '智慧菜市场', content: '菜市场数字化：线上点单+配送+溯源+价格监测。', category: 'user', createdAt: '2026-07-09T16:00:00Z' },
+      { id: 'usr10', title: 'AI PPT 生成', content: '输入主题自动生成专业 PPT，支持模板切换。', category: 'user', createdAt: '2026-07-09T17:00:00Z' },
+      { id: 'usr11', title: '本地健身管家', content: 'AI 制定训练计划+饮食建议+附近场馆推荐。', category: 'user', createdAt: '2026-07-09T18:00:00Z' },
+      { id: 'usr12', title: '智能充电桩', content: '新能源车主找桩+预约充电+自动支付一站式服务。', category: 'user', createdAt: '2026-07-09T19:00:00Z' }
+    ];
+
+    // 最新创意点子
+    var freshIdeas = [
+      { id: 'frh1', title: 'AI 绘画定制', content: '上传照片 AI 生成艺术风格画作，可打印装饰画。', category: 'fresh', createdAt: '2026-07-09T20:00:00Z' },
+      { id: 'frh2', title: '同城共享工具', content: '邻里间共享电动工具、厨具等闲置物品的平台。', category: 'fresh', createdAt: '2026-07-09T21:00:00Z' },
+      { id: 'frh3', title: 'AI 音乐创作', content: '输入风格和主题 AI 生成背景音乐，适合短视频配乐。', category: 'fresh', createdAt: '2026-07-10T08:00:00Z' },
+      { id: 'frh4', title: '智慧自习室', content: '付费自习室在线预约+AI 学习监督+环境智能调节。', category: 'fresh', createdAt: '2026-07-10T09:00:00Z' },
+      { id: 'frh5', title: 'AI 塔罗占卜', content: 'AI 驱动的塔罗牌解读体验，娱乐社交属性。', category: 'fresh', createdAt: '2026-07-10T10:00:00Z' },
+      { id: 'frh6', title: '同城拼车通勤', content: 'AI 智能匹配通勤路线，安全认证+费用分摊。', category: 'fresh', createdAt: '2026-07-10T11:00:00Z' },
+      { id: 'frh7', title: 'AI 穿搭推荐', content: '根据身材数据和场景 AI 推荐穿搭方案+购买链接。', category: 'fresh', createdAt: '2026-07-10T12:00:00Z' },
+      { id: 'frh8', title: '智能花店系统', content: '鲜花在线定制+AI 插花方案+同城极速配送。', category: 'fresh', createdAt: '2026-07-10T13:00:00Z' },
+      { id: 'frh9', title: 'AI 旅游规划', content: '输入预算和时间 AI 生成旅行方案，含本地深度游。', category: 'fresh', createdAt: '2026-07-10T14:00:00Z' },
+      { id: 'frh10', title: '社区团购2.0', content: '视频直播+AI 选品+社群裂变的新一代团购。', category: 'fresh', createdAt: '2026-07-10T15:00:00Z' },
+      { id: 'frh11', title: 'AI 宠物翻译', content: 'AI 解读宠物叫声和肢体语言，帮助主人理解宠物。', category: 'fresh', createdAt: '2026-07-10T16:00:00Z' },
+      { id: 'frh12', title: '本地仓储共享', content: '闲置仓储空间共享平台，AI 优化仓位分配。', category: 'fresh', createdAt: '2026-07-10T17:00:00Z' }
     ];
 
     function getIdeas() {
@@ -615,15 +595,15 @@
         var raw = localStorage.getItem(IDEAS_KEY);
         saved = raw ? JSON.parse(raw) : [];
       } catch (e) { saved = []; }
-      // 合并系统预置 + 热门 + 用户提交
-      var all = systemIdeas.concat(hotIdeas).concat(saved);
+      // 合并系统预置 + 热门 + 客户发起 + 最新 + 用户提交
+      var all = systemIdeas.concat(hotIdeas).concat(userIdeas).concat(freshIdeas).concat(saved);
       return all;
     }
 
     function saveIdeas(list) {
       // 只保存用户提交的，系统预置的每次动态合并
-      var userIdeas = list.filter(function (i) { return !i.isSystem && !i.isHot; });
-      try { localStorage.setItem(IDEAS_KEY, JSON.stringify(userIdeas)); } catch (e) {}
+      var userOnly = list.filter(function (i) { return !i.isSystem && i.category !== 'system' && i.category !== 'hot' && i.category !== 'user' && i.category !== 'fresh'; });
+      try { localStorage.setItem(IDEAS_KEY, JSON.stringify(userOnly)); } catch (e) {}
     }
 
     function getCachedIdeas() {
@@ -660,6 +640,75 @@
       if (overlay) overlay.style.display = 'none';
     };
 
+    // 认领项目功能
+    window.claimIdea = function () {
+      var overlay = document.getElementById('ideaTagOverlay');
+      var ideaId = overlay ? overlay.dataset.ideaId : '';
+      var titleEl = document.getElementById('expandedTitle');
+      var title = titleEl ? titleEl.textContent : '';
+      
+      // 弹出认领确认
+      var claimOverlay = document.getElementById('claimOverlay');
+      if (!claimOverlay) {
+        claimOverlay = document.createElement('div');
+        claimOverlay.id = 'claimOverlay';
+        claimOverlay.style.cssText = 'position:fixed;inset:0;z-index:10001;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);';
+        claimOverlay.innerHTML = '<div style="background:#1a1a2e;border:1px solid rgba(255,107,53,0.3);border-radius:20px;padding:32px;max-width:420px;width:90%;text-align:center;">' +
+          '<h3 style="color:#fff;font-size:20px;margin-bottom:12px;">🎉 认领项目</h3>' +
+          '<p style="color:rgba(255,255,255,0.7);margin-bottom:8px;">你正在认领：</p>' +
+          '<p id="claimTitle" style="color:#FF6B35;font-size:18px;font-weight:700;margin-bottom:20px;"></p>' +
+          '<input id="claimName" type="text" placeholder="你的称呼" style="width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.05);color:#fff;font-size:15px;margin-bottom:12px;box-sizing:border-box;">' +
+          '<input id="claimContact" type="text" placeholder="联系方式（手机/微信）" style="width:100%;padding:12px 16px;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.05);color:#fff;font-size:15px;margin-bottom:20px;box-sizing:border-box;">' +
+          '<div style="display:flex;gap:12px;">' +
+            '<button id="claimConfirm" style="flex:1;padding:12px;background:linear-gradient(135deg,#FF6B35,#FF8F5A);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">确认认领</button>' +
+            '<button id="claimCancel" style="flex:1;padding:12px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);border:1px solid rgba(255,255,255,0.1);border-radius:10px;font-size:15px;cursor:pointer;">取消</button>' +
+          '</div>' +
+        '</div>';
+        document.body.appendChild(claimOverlay);
+      }
+      
+      var claimTitle = document.getElementById('claimTitle');
+      if (claimTitle) claimTitle.textContent = title;
+      claimOverlay.style.display = 'flex';
+      
+      // 关闭点子详情
+      window.closeIdeaTag();
+      
+      // 绑定确认/取消
+      var confirmBtn = document.getElementById('claimConfirm');
+      var cancelBtn = document.getElementById('claimCancel');
+      
+      confirmBtn.onclick = function() {
+        var name = document.getElementById('claimName').value.trim();
+        var contact = document.getElementById('claimContact').value.trim();
+        if (!name || !contact) {
+          alert('请填写称呼和联系方式');
+          return;
+        }
+        // 保存认领信息
+        try {
+          var claims = JSON.parse(localStorage.getItem('tcai_claims_v1') || '[]');
+          claims.push({ ideaId: ideaId, title: title, name: name, contact: contact, claimedAt: new Date().toISOString() });
+          localStorage.setItem('tcai_claims_v1', JSON.stringify(claims));
+        } catch(e) {}
+        claimOverlay.style.display = 'none';
+        // 成功提示
+        var successEl = document.createElement('div');
+        successEl.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10002;background:#1a1a2e;border:1px solid rgba(76,175,80,0.3);border-radius:16px;padding:24px 32px;text-align:center;';
+        successEl.innerHTML = '<p style="color:#4CAF50;font-size:18px;font-weight:700;">✅ 认领成功！</p><p style="color:rgba(255,255,255,0.6);margin-top:8px;font-size:14px;">我们将尽快联系你推进项目</p>';
+        document.body.appendChild(successEl);
+        setTimeout(function() { successEl.remove(); }, 2500);
+      };
+      
+      cancelBtn.onclick = function() {
+        claimOverlay.style.display = 'none';
+      };
+      
+      claimOverlay.onclick = function(e) {
+        if (e.target === claimOverlay) claimOverlay.style.display = 'none';
+      };
+    };
+
     // 点击遮罩关闭
     var overlay = document.getElementById('ideaTagOverlay');
     if (overlay) {
@@ -689,12 +738,12 @@
       renderTree(list);
     }
 
-    // 兼容老调用：renderTree → 渲染"创意气泡树"
+    // 兼容老调用：renderTree → 渲染"星座图"
     function renderTree(list) {
       var container = document.getElementById('ideaTagsContainer');
       if (!container) return;
       if (!list || !list.length) {
-        container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:14px;padding:80px 20px">还没有创意，期待你的灵感挂上树梢 🌱</div>';
+        container.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:14px;padding:80px 20px">还没有创意，期待你的灵感 💡</div>';
         return;
       }
 
@@ -727,411 +776,239 @@
       // 3. 打散顺序
       var shuffled = filtered.slice().sort(function() { return Math.random() - 0.5; });
 
-      // 4. SVG 画布
-      var W = 1200;
-      var H = 940;
+      // 4. 用HTML+CSS实现星座图（不用SVG文字，用HTML标签更清晰）
+      container.innerHTML = '';
+      container.className = 'constellation-container';
+
+      // 5. 画布尺寸
+      var W = 1600;
+      var H = 1000;
       var cx = W / 2;
-      var groundY = H - 30;
-      var trunkBaseY = groundY;
-      var trunkTop = groundY - 400;
+      var cy = H / 2;
 
-      // 5. 树枝收集器
-      var allBranches = [];
-      var allSpots = [];
-
-      function buildBranchPath(x1, y1, x2, y2, curve) {
-        var mx = (x1 + x2) / 2;
-        var my = (y1 + y2) / 2;
-        var dx = x2 - x1, dy = y2 - y1;
-        var len = Math.sqrt(dx * dx + dy * dy) || 1;
-        var nx = -dy / len, ny = dx / len;
-        var offset = (Math.random() - 0.5) * (curve || 0.18) * len;
-        var cpx = mx + nx * offset;
-        var cpy = my + ny * offset;
-        return 'M ' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
-               ' Q ' + cpx.toFixed(1) + ' ' + cpy.toFixed(1) + ', ' + x2.toFixed(1) + ' ' + y2.toFixed(1);
+      // 6. 计算节点位置（椭圆三圈）
+      var nodePositions = [];
+      var count = shuffled.length;
+      var ellipseRatio = 1.6;
+      
+      // 内圈
+      var innerCount = Math.min(10, count);
+      var innerRY = 150;
+      var innerRX = innerRY * ellipseRatio;
+      for (var i = 0; i < innerCount; i++) {
+        var angle = (i / innerCount) * Math.PI * 2 - Math.PI / 2;
+        nodePositions.push({
+          x: cx + Math.cos(angle) * innerRX + (Math.random() - 0.5) * 15,
+          y: cy + Math.sin(angle) * innerRY + (Math.random() - 0.5) * 10,
+          layer: 'inner'
+        });
+      }
+      
+      // 中圈
+      var midCount = Math.min(20, count - innerCount);
+      var midRY = 280;
+      var midRX = midRY * ellipseRatio;
+      for (var i = 0; i < midCount; i++) {
+        var angle = (i / midCount) * Math.PI * 2 - Math.PI / 2 + (Math.PI / midCount);
+        nodePositions.push({
+          x: cx + Math.cos(angle) * midRX + (Math.random() - 0.5) * 20,
+          y: cy + Math.sin(angle) * midRY + (Math.random() - 0.5) * 12,
+          layer: 'mid'
+        });
+      }
+      
+      // 外圈
+      var outerCount = count - innerCount - midCount;
+      var outerRY = 410;
+      var outerRX = outerRY * ellipseRatio;
+      for (var i = 0; i < outerCount; i++) {
+        var angle = (i / outerCount) * Math.PI * 2 - Math.PI / 2 + (Math.PI / outerCount);
+        nodePositions.push({
+          x: cx + Math.cos(angle) * outerRX + (Math.random() - 0.5) * 25,
+          y: cy + Math.sin(angle) * outerRY + (Math.random() - 0.5) * 15,
+          layer: 'outer'
+        });
       }
 
-      function bezierPoint(t, x1, y1, cx1, cy1, cx2, cy2, x2, y2) {
-        var it = 1 - t;
-        return {
-          x: it*it*it*x1 + 3*it*it*t*cx1 + 3*it*t*t*cx2 + t*t*t*x2,
-          y: it*it*it*y1 + 3*it*it*t*cy1 + 3*it*t*t*cy2 + t*t*t*y2
-        };
-      }
-
-      function growTree(startX, startY, angle, length, width, depth, layer, maxDepth) {
-        if (depth > maxDepth || length < 14) return;
-        var endX = startX + Math.cos(angle) * length;
-        var endY = startY + Math.sin(angle) * length;
-        var perpX = -Math.sin(angle);
-        var perpY = Math.cos(angle);
-        var bulge = (Math.random() - 0.4) * 0.22;
-        var c1x = startX + Math.cos(angle) * length * 0.4 + perpX * length * bulge;
-        var c1y = startY + Math.sin(angle) * length * 0.4 + perpY * length * bulge;
-        var c2x = startX + Math.cos(angle) * length * 0.75 + perpX * length * bulge * 0.6;
-        var c2y = startY + Math.sin(angle) * length * 0.75 + perpY * length * bulge * 0.6;
-        var path = 'M ' + startX.toFixed(1) + ' ' + startY.toFixed(1) +
-                   ' C ' + c1x.toFixed(1) + ' ' + c1y.toFixed(1) + ', ' +
-                         c2x.toFixed(1) + ' ' + c2y.toFixed(1) + ', ' +
-                         endX.toFixed(1) + ' ' + endY.toFixed(1);
-        var branch = {
-          path: path, endX: endX, endY: endY,
-          startX: startX, startY: startY,
-          width: width, layer: layer, depth: depth,
-          c1x: c1x, c1y: c1y, c2x: c2x, c2y: c2y
-        };
-        allBranches.push(branch);
-        if (depth >= 1) {
-          allSpots.push({ x: endX, y: endY, layer: layer, parentAngle: angle, branch: branch });
-          if (depth <= 2) {
-            for (var mp = 0.45; mp < 0.95; mp += 0.5) {
-              var pt = bezierPoint(mp, startX, startY, c1x, c1y, c2x, c2y, endX, endY);
-              allSpots.push({ x: pt.x, y: pt.y, layer: layer, parentAngle: angle, branch: branch });
-            }
-          }
-        }
-        if (depth < maxDepth) {
-          var subCount, spreadBase;
-          if (depth === 0) { subCount = 5; spreadBase = 1.0; }
-          else if (depth === 1) { subCount = 3; spreadBase = 0.55; }
-          else if (depth === 2) { subCount = 2; spreadBase = 0.5; }
-          else { subCount = Math.random() < 0.6 ? 2 : 1; spreadBase = 0.45; }
-          for (var i = 0; i < subCount; i++) {
-            var t = subCount === 1 ? 0 : (i / (subCount - 1)) * 2 - 1;
-            var spread = t * spreadBase + (Math.random() - 0.5) * 0.2;
-            var subAngle = angle + spread;
-            if (subAngle > -Math.PI / 2 + 0.2) subAngle = -Math.PI / 2 + 0.2 + (Math.random() - 0.5) * 0.3;
-            if (subAngle > -0.3) subAngle = -0.3 - Math.random() * 0.2;
-            var subLength = length * (0.6 + Math.random() * 0.22);
-            var subWidth = width * (0.55 + Math.random() * 0.15);
-            growTree(endX, endY, subAngle, subLength, subWidth, depth + 1, layer, maxDepth);
-          }
-        }
-      }
-
-      // 生成 3 层树
-      var trunkLen = 260;
-      growTree(cx - 10, trunkBaseY, -Math.PI / 2 - 0.05, trunkLen + 25, 7, 0, 'far', 4);
-      growTree(cx, trunkBaseY, -Math.PI / 2, trunkLen, 8.5, 0, 'mid', 4);
-      growTree(cx + 8, trunkBaseY, -Math.PI / 2 + 0.04, trunkLen - 5, 9.5, 0, 'near', 4);
-
-      // 6. 分配气泡挂点
-      allSpots.sort(function() { return Math.random() - 0.5; });
-      var layerMax = { far: 7, mid: 12, near: 18 };
-      var layerCount = { far: 0, mid: 0, near: 0 };
-      var usedSpots = [];
-      allSpots.forEach(function(s) {
-        if (layerCount[s.layer] >= layerMax[s.layer]) return;
-        usedSpots.push(s);
-        layerCount[s.layer]++;
-      });
-      while (usedSpots.length < shuffled.length && usedSpots.length > 0) {
-        usedSpots.push(usedSpots[usedSpots.length % usedSpots.length]);
-      }
-      usedSpots = usedSpots.slice(0, shuffled.length);
-
-      // 7. 气泡配色（参考图：深红、橙色、深灰、浅灰）
-      var bubbleColors = {
-        system: { fill: '#A0302A', stroke: '#7A2018', text: '#FFFFFF' },
-        hot:    { fill: '#E8702A', stroke: '#C05A18', text: '#FFFFFF' },
-        user:   { fill: '#5A5A5A', stroke: '#3A3A3A', text: '#FFFFFF' },
-        fresh:  { fill: '#B0B0B0', stroke: '#8A8A8A', text: '#333333' }
-      };
-
-      // 气泡形状类型：ellipse, roundedRect, cloud, starBurst, circle, smallDot
-      var shapeTypes = ['ellipse', 'roundedRect', 'cloud', 'starBurst', 'circle', 'smallDot'];
-
-      // 8. SVG 渲染
+      // 7. SVG层：背景、连线、中心、星星点
       var svgParts = [];
-      svgParts.push('<svg class="idea-tree__svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMax meet" xmlns="http://www.w3.org/2000/svg">');
-
+      svgParts.push('<svg class="constellation-svg" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">');
       svgParts.push('<defs>');
-      // 树干渐变
-      svgParts.push('  <linearGradient id="trunkGrad" x1="0%" y1="0%" x2="100%" y2="0%">');
-      svgParts.push('    <stop offset="0%"  stop-color="#3A2110" />');
-      svgParts.push('    <stop offset="30%" stop-color="#5A331B" />');
-      svgParts.push('    <stop offset="60%" stop-color="#4A2A14" />');
-      svgParts.push('    <stop offset="100%" stop-color="#2A1608" />');
-      svgParts.push('  </linearGradient>');
-      svgParts.push('  <linearGradient id="trunkHi" x1="0%" y1="0%" x2="100%" y2="0%">');
-      svgParts.push('    <stop offset="0%" stop-color="rgba(255,210,150,0.25)" />');
-      svgParts.push('    <stop offset="40%" stop-color="rgba(255,210,150,0.0)" />');
-      svgParts.push('  </linearGradient>');
-
-      // 气泡阴影
-      svgParts.push('  <filter id="bubbleShadow" x="-50%" y="-30%" width="200%" height="160%">');
-      svgParts.push('    <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity="0.45" />');
+      svgParts.push('  <radialGradient id="centerGlow" cx="50%" cy="50%">');
+      svgParts.push('    <stop offset="0%" stop-color="#FF6B35" stop-opacity="0.4" />');
+      svgParts.push('    <stop offset="100%" stop-color="#FF6B35" stop-opacity="0" />');
+      svgParts.push('  </radialGradient>');
+      svgParts.push('  <filter id="starGlow" x="-100%" y="-100%" width="300%" height="300%">');
+      svgParts.push('    <feGaussianBlur stdDeviation="4" result="blur" />');
+      svgParts.push('    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>');
       svgParts.push('  </filter>');
-      svgParts.push('  <filter id="bubbleFar" x="-50%" y="-30%" width="200%" height="160%">');
-      svgParts.push('    <feGaussianBlur stdDeviation="1.8" />');
-      svgParts.push('  </filter>');
-      svgParts.push('  <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">');
-      svgParts.push('    <feGaussianBlur stdDeviation="8" />');
-      svgParts.push('  </filter>');
-      svgParts.push('  <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">');
-      svgParts.push('    <feGaussianBlur stdDeviation="3" />');
+      svgParts.push('  <filter id="centerShadow" x="-50%" y="-50%" width="200%" height="200%">');
+      svgParts.push('    <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.4" />');
       svgParts.push('  </filter>');
       svgParts.push('</defs>');
-
-      // ---- 背景 ----
-      svgParts.push('<ellipse cx="' + cx + '" cy="' + (H - 28) + '" rx="500" ry="34" fill="rgba(0,0,0,0.65)" />');
-      svgParts.push('<ellipse cx="' + cx + '" cy="' + (H - 32) + '" rx="460" ry="22" fill="rgba(255,150,60,0.22)" filter="url(#glow)" />');
-
-      for (var gpi = 0; gpi < 36; gpi++) {
-        var gpx = 50 + Math.random() * (W - 100);
-        var gpy = 50 + Math.random() * (H - 220);
-        var gpr = 1.5 + Math.random() * 3.2;
-        var gpo = 0.12 + Math.random() * 0.32;
-        svgParts.push('<circle cx="' + gpx + '" cy="' + gpy + '" r="' + gpr + '" fill="#FFE3A8" opacity="' + gpo + '" filter="url(#softGlow)" />');
+      
+      // 背景光晕
+      svgParts.push('<circle cx="' + cx + '" cy="' + cy + '" r="300" fill="url(#centerGlow)" />');
+      
+      // 背景星点装饰
+      for (var i = 0; i < 80; i++) {
+        var sx = Math.random() * W;
+        var sy = Math.random() * H;
+        var sr = 0.5 + Math.random() * 1.5;
+        var so = 0.15 + Math.random() * 0.25;
+        svgParts.push('<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="' + sr.toFixed(1) + '" fill="#FFF" opacity="' + so.toFixed(2) + '" />');
       }
 
-      // ---- 树根 ----
-      var roots = [
-        { x1: cx - 55, y1: trunkBaseY + 8, x2: cx - 195, y2: trunkBaseY + 38, w: 24 },
-        { x1: cx + 55, y1: trunkBaseY + 8, x2: cx + 200, y2: trunkBaseY + 32, w: 24 },
-        { x1: cx - 22, y1: trunkBaseY + 10, x2: cx - 115, y2: trunkBaseY + 80, w: 16 },
-        { x1: cx + 22, y1: trunkBaseY + 10, x2: cx + 120, y2: trunkBaseY + 75, w: 16 },
-        { x1: cx - 5, y1: trunkBaseY + 12, x2: cx - 40, y2: trunkBaseY + 100, w: 11 },
-        { x1: cx + 5, y1: trunkBaseY + 12, x2: cx + 40, y2: trunkBaseY + 95, w: 11 }
-      ];
-      roots.forEach(function(r) {
-        var rp = buildBranchPath(r.x1, r.y1, r.x2, r.y2, 0.3);
-        svgParts.push('<path d="' + rp + '" stroke="#3A2110" stroke-width="' + r.w + '" fill="none" stroke-linecap="round" opacity="0.88" />');
-      });
+      // 颜色映射
+      var lineColors = { system: '#FF6B6B', hot: '#4CAF50', user: '#42A5F5', fresh: '#AB47BC' };
+      var starColors = {
+        system: ['#FF6B6B', '#E84545', '#FF8888'],
+        hot:    ['#4CAF50', '#43A047', '#66BB6A'],
+        user:   ['#42A5F5', '#1E88E5', '#64B5F6'],
+        fresh:  ['#AB47BC', '#8E24AA', '#BA68C8']
+      };
 
-      // ---- 树干 ----
-      var trunkPath = 'M ' + (cx - 65) + ' ' + (trunkBaseY + 5) +
-        ' C ' + (cx - 88) + ' ' + (trunkBaseY - 80) + ', ' + (cx - 62) + ' ' + (trunkBaseY - 200) + ', ' + (cx - 48) + ' ' + (trunkTop + 90) +
-        ' C ' + (cx - 44) + ' ' + (trunkTop + 40) + ', ' + (cx - 36) + ' ' + (trunkTop + 12) + ', ' + (cx - 28) + ' ' + trunkTop +
-        ' L ' + (cx + 28) + ' ' + trunkTop +
-        ' C ' + (cx + 36) + ' ' + (trunkTop + 12) + ', ' + (cx + 44) + ' ' + (trunkTop + 40) + ', ' + (cx + 48) + ' ' + (trunkTop + 90) +
-        ' C ' + (cx + 62) + ' ' + (trunkBaseY - 200) + ', ' + (cx + 92) + ' ' + (trunkBaseY - 80) + ', ' + (cx + 65) + ' ' + (trunkBaseY + 5) + ' Z';
-      svgParts.push('<path d="' + trunkPath + '" fill="url(#trunkGrad)" />');
-      svgParts.push('<path d="' + trunkPath + '" fill="url(#trunkHi)" />');
-      for (var tti = 0; tti < 24; tti++) {
-        var ttx = cx + (Math.random() - 0.5) * 100;
-        var tty = trunkTop + 30 + Math.random() * (trunkBaseY - trunkTop - 50);
-        var ttw = 4 + Math.random() * 10;
-        var tth = 12 + Math.random() * 22;
-        svgParts.push('<ellipse cx="' + ttx + '" cy="' + tty + '" rx="' + (ttw/2) + '" ry="' + (tth/2) + '" fill="rgba(0,0,0,0.35)" />');
-      }
-      svgParts.push('<path d="M ' + (cx - 6) + ' ' + (trunkTop + 50) + ' Q ' + (cx + 4) + ' ' + ((trunkTop + trunkBaseY) / 2) + ' ' + (cx - 2) + ' ' + (trunkBaseY - 30) + '" stroke="rgba(0,0,0,0.5)" stroke-width="1.8" fill="none" />');
-      svgParts.push('<path d="M ' + (cx + 14) + ' ' + (trunkTop + 70) + ' Q ' + (cx + 16) + ' ' + ((trunkTop + trunkBaseY) / 2 + 50) + ', ' + (cx + 14) + ' ' + (trunkBaseY - 50) + '" stroke="rgba(255,200,140,0.14)" stroke-width="1.3" fill="none" />');
-      svgParts.push('<ellipse cx="' + (cx - 32) + '" cy="' + (trunkBaseY - 100) + '" rx="10" ry="13" fill="rgba(0,0,0,0.45)" />');
-      svgParts.push('<ellipse cx="' + (cx - 32) + '" cy="' + (trunkBaseY - 100) + '" rx="6" ry="8" fill="rgba(255,200,140,0.12)" />');
-      svgParts.push('<ellipse cx="' + (cx + 38) + '" cy="' + (trunkBaseY - 200) + '" rx="8" ry="10" fill="rgba(0,0,0,0.4)" />');
-
-      // ---- 后层枝条 ----
-      svgParts.push('<g class="branch-layer branch-layer--far">');
-      allBranches.filter(function(b) { return b.layer === 'far'; }).forEach(function(b) {
-        svgParts.push('  <path d="' + b.path + '" stroke="#1F1208" stroke-width="' + (b.width * 0.55).toFixed(1) + '" fill="none" stroke-linecap="round" opacity="0.55" />');
-      });
-      svgParts.push('</g>');
-
-      // ---- 中层枝条 ----
-      svgParts.push('<g class="branch-layer branch-layer--mid">');
-      allBranches.filter(function(b) { return b.layer === 'mid'; }).forEach(function(b) {
-        var stroke = b.depth === 0 ? '#5A331B' : '#6B3D1F';
-        svgParts.push('  <path d="' + b.path + '" stroke="' + stroke + '" stroke-width="' + (b.width * 0.78).toFixed(1) + '" fill="none" stroke-linecap="round" opacity="0.78" />');
-      });
-      svgParts.push('</g>');
-
-      // ---- 前层枝条 ----
-      svgParts.push('<g class="branch-layer branch-layer--near">');
-      allBranches.filter(function(b) { return b.layer === 'near'; }).forEach(function(b) {
-        var stroke = b.depth === 0 ? '#7A4A26' : '#5A331B';
-        svgParts.push('  <path d="' + b.path + '" stroke="' + stroke + '" stroke-width="' + b.width.toFixed(1) + '" fill="none" stroke-linecap="round" />');
-      });
-      svgParts.push('</g>');
-
-      // 9. 为每个 idea 生成对话气泡
-      // 气泡形状生成函数 - 尾巴方向随机，更自然
-      function makeBubblePath(shape, w, h, tailAngle) {
-        var hw = w / 2, hh = h / 2;
-        // 尾巴长度和角度随机
-        var tailLen = 8 + Math.random() * 8;
-        var tailSpread = 0.3 + Math.random() * 0.4;
-        
-        // 根据尾巴角度计算尾巴终点
-        var tailEndX = Math.cos(tailAngle) * (Math.min(hw, hh) + tailLen);
-        var tailEndY = Math.sin(tailAngle) * (Math.min(hw, hh) + tailLen);
-        var tailBaseX = Math.cos(tailAngle) * Math.min(hw, hh) * 0.85;
-        var tailBaseY = Math.sin(tailAngle) * Math.min(hw, hh) * 0.85;
-        
-        // 尾巴两侧控制点
-        var tailAngle1 = tailAngle - tailSpread;
-        var tailAngle2 = tailAngle + tailSpread;
-        var tailMidX = Math.cos(tailAngle) * (Math.min(hw, hh) + tailLen * 0.6);
-        var tailMidY = Math.sin(tailAngle) * (Math.min(hw, hh) + tailLen * 0.6);
-        
-        switch (shape) {
-          case 'ellipse':
-            // 椭圆气泡 + 自然尾巴
-            return 'M ' + (-hw) + ' 0' +
-              ' A ' + hw + ' ' + hh + ' 0 1 1 ' + hw + ' 0' +
-              ' A ' + hw + ' ' + hh + ' 0 1 1 ' + (-hw) + ' 0 Z' +
-              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
-              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
-              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
-          case 'roundedRect':
-            var r = Math.min(hw, hh) * 0.35;
-            return 'M ' + (-hw + r) + ' ' + (-hh) +
-              ' L ' + (hw - r) + ' ' + (-hh) +
-              ' A ' + r + ' ' + r + ' 0 0 1 ' + hw + ' ' + (-hh + r) +
-              ' L ' + hw + ' ' + (hh - r) +
-              ' A ' + r + ' ' + r + ' 0 0 1 ' + (hw - r) + ' ' + hh +
-              ' L ' + (-hw + r) + ' ' + hh +
-              ' A ' + r + ' ' + r + ' 0 0 1 ' + (-hw) + ' ' + (hh - r) +
-              ' L ' + (-hw) + ' ' + (-hh + r) +
-              ' A ' + r + ' ' + r + ' 0 0 1 ' + (-hw + r) + ' ' + (-hh) + ' Z' +
-              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
-              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
-              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
-          case 'cloud':
-            // 云朵形状（多个圆弧拼接）
-            var cr = Math.min(hw, hh) * 0.45;
-            return 'M ' + (-hw + cr * 0.5) + ' ' + (hh * 0.3) +
-              ' A ' + cr + ' ' + cr + ' 0 0 1 ' + (-hw + cr * 0.3) + ' ' + (-hh * 0.4) +
-              ' A ' + (cr * 1.1) + ' ' + (cr * 1.1) + ' 0 0 1 ' + (hw * 0.1) + ' ' + (-hh - cr * 0.3) +
-              ' A ' + (cr * 0.9) + ' ' + (cr * 0.9) + ' 0 0 1 ' + (hw - cr * 0.2) + ' ' + (-hh * 0.5) +
-              ' A ' + cr + ' ' + cr + ' 0 0 1 ' + (hw + cr * 0.3) + ' ' + (hh * 0.2) +
-              ' A ' + (cr * 0.8) + ' ' + (cr * 0.8) + ' 0 0 1 ' + (hw * 0.5) + ' ' + (hh + cr * 0.2) +
-              ' A ' + (cr * 0.7) + ' ' + (cr * 0.7) + ' 0 0 1 ' + (-hw * 0.3) + ' ' + (hh + cr * 0.15) +
-              ' A ' + (cr * 0.9) + ' ' + (cr * 0.9) + ' 0 0 1 ' + (-hw + cr * 0.5) + ' ' + (hh * 0.3) + ' Z' +
-              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
-              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
-              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
-          case 'starBurst':
-            // 星形爆炸气泡
-            var pts = 8;
-            var outerR = Math.min(hw, hh);
-            var innerR = outerR * 0.6;
-            var d = '';
-            for (var si = 0; si < pts * 2; si++) {
-              var sa = (si / (pts * 2)) * Math.PI * 2 - Math.PI / 2;
-              var sr = si % 2 === 0 ? outerR : innerR;
-              var sx = Math.cos(sa) * sr;
-              var sy = Math.sin(sa) * sr;
-              d += (si === 0 ? 'M ' : ' L ') + sx.toFixed(1) + ' ' + sy.toFixed(1);
-            }
-            d += ' Z';
-            // 小尾巴
-            d += ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
-              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
-              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
-            return d;
-          case 'circle':
-            var cr2 = Math.min(hw, hh);
-            return 'M ' + 0 + ' ' + (-cr2) +
-              ' A ' + cr2 + ' ' + cr2 + ' 0 1 1 ' + 0 + ' ' + cr2 +
-              ' A ' + cr2 + ' ' + cr2 + ' 0 1 1 ' + 0 + ' ' + (-cr2) + ' Z' +
-              ' M ' + tailBaseX.toFixed(1) + ' ' + tailBaseY.toFixed(1) +
-              ' Q ' + tailMidX.toFixed(1) + ' ' + tailMidY.toFixed(1) + ' ' + tailEndX.toFixed(1) + ' ' + tailEndY.toFixed(1) +
-              ' Q ' + (tailMidX - Math.cos(tailAngle2) * 3).toFixed(1) + ' ' + (tailMidY - Math.sin(tailAngle2) * 3).toFixed(1) + ' ' + (tailBaseX - Math.cos(tailAngle1) * 2).toFixed(1) + ' ' + (tailBaseY - Math.sin(tailAngle1) * 2).toFixed(1);
-          case 'smallDot':
-            var dr = Math.min(hw, hh) * 0.7;
-            return 'M ' + 0 + ' ' + (-dr) +
-              ' A ' + dr + ' ' + dr + ' 0 1 1 ' + 0 + ' ' + dr +
-              ' A ' + dr + ' ' + dr + ' 0 1 1 ' + 0 + ' ' + (-dr) + ' Z';
-          default:
-            return 'M ' + (-hw) + ' ' + (-hh) + ' L ' + hw + ' ' + (-hh) + ' L ' + hw + ' ' + hh + ' L ' + (-hw) + ' ' + hh + ' Z';
-        }
-      }
-
-      var farBubbles = [];
-      var midBubbles = [];
-      var nearBubbles = [];
-
+      // 连线
       shuffled.forEach(function(idea, idx) {
-        if (idx >= usedSpots.length) return;
+        if (idx >= nodePositions.length) return;
+        var pos = nodePositions[idx];
         var cat = getCategoryFromIdea(idea);
-        var spot = usedSpots[idx];
-        var color = bubbleColors[cat] || bubbleColors.user;
-        var layer = spot.layer;
-        var finalLayer = layer;
-        if (layer === 'near' && Math.random() < 0.2) finalLayer = 'mid';
-        if (layer === 'mid' && Math.random() < 0.15) finalLayer = 'far';
-
-        // 气泡尺寸（根据层级和随机）
-        var baseScale = finalLayer === 'far' ? 0.55 : finalLayer === 'mid' ? 0.78 : 1.0;
-        var sizeVar = 0.7 + Math.random() * 0.6; // 0.7 ~ 1.3
-        var bubbleW = (36 + Math.random() * 50) * sizeVar * baseScale;  // 36~86
-        var bubbleH = (28 + Math.random() * 36) * sizeVar * baseScale;  // 28~64
-
-        // 气泡形状（小尺寸更倾向圆点/小圆）
-        var shape;
-        if (bubbleW < 30) {
-          shape = 'smallDot';
-        } else {
-          // 按分类偏好形状
-          var shapeRoll = Math.random();
-          if (cat === 'system') {
-            shape = shapeRoll < 0.35 ? 'ellipse' : shapeRoll < 0.6 ? 'roundedRect' : shapeRoll < 0.8 ? 'starBurst' : 'cloud';
-          } else if (cat === 'hot') {
-            shape = shapeRoll < 0.3 ? 'roundedRect' : shapeRoll < 0.55 ? 'ellipse' : shapeRoll < 0.8 ? 'starBurst' : 'circle';
-          } else if (cat === 'user') {
-            shape = shapeRoll < 0.3 ? 'cloud' : shapeRoll < 0.55 ? 'ellipse' : shapeRoll < 0.8 ? 'roundedRect' : 'circle';
-          } else {
-            shape = shapeRoll < 0.3 ? 'circle' : shapeRoll < 0.55 ? 'smallDot' : shapeRoll < 0.8 ? 'ellipse' : 'roundedRect';
-          }
-        }
-
-        // 计算尾巴角度：指向树枝方向（从气泡指向挂点的反方向）
-        var tailAngle = spot.parentAngle + Math.PI + (Math.random() - 0.5) * 0.6;
+        var lineColor = lineColors[cat] || '#AB47BC';
         
-        var bubblePath = makeBubblePath(shape, bubbleW, bubbleH, tailAngle);
-
-        // 位置：挂在树枝挂点附近，稍微偏移
-        var offsetX = (Math.random() - 0.5) * 30;
-        var offsetY = (Math.random() - 0.5) * 20;
-        var bx = spot.x + offsetX;
-        var by = spot.y + offsetY;
-
-        // 轻微旋转（让气泡更自然）
-        var rot = (Math.random() - 0.5) * 15;
-
-        var opacity = finalLayer === 'far' ? 0.55 : finalLayer === 'mid' ? 0.82 : 1.0;
-        var filterAttr = finalLayer === 'far' ? ' filter="url(#bubbleFar)"' : ' filter="url(#bubbleShadow)"';
-        var layerClass = 'idea-bubble idea-bubble--' + finalLayer;
-
-        // 气泡内的文字（短标题）
-        var rawTitle = String(idea.title || '');
-        var shortTitle = rawTitle.length > 5 ? rawTitle.substring(0, 5) : rawTitle;
-        var fontSize = Math.max(9, Math.min(13, bubbleW * 0.22));
-
-        var onclickAttr = ' onclick="window.openIdeaTag(\'' + esc(idea.title) + '\',\'' + esc(idea.content || '') + '\',' + (cat === 'system' ? 'true' : 'false') + ',\'' + esc(idea.id) + '\')"';
-
-        var bubble = '<g class="' + layerClass + '" data-cat="' + cat + '"' +
-          ' transform="translate(' + bx.toFixed(1) + ',' + by.toFixed(1) + ') rotate(' + rot.toFixed(1) + ')"' +
-          ' style="opacity:' + opacity + '"' + onclickAttr + filterAttr + '>' +
-          '<path d="' + bubblePath + '" fill="' + color.fill + '" stroke="' + color.stroke + '" stroke-width="1.2" />' +
-          (shortTitle ? '<text x="0" y="' + (fontSize * 0.35) + '" text-anchor="middle" font-size="' + fontSize.toFixed(1) + '" font-weight="700" fill="' + color.text + '" style="pointer-events:none; font-family: inherit">' + esc(shortTitle) + '</text>' : '') +
-          '</g>';
-
-        if (finalLayer === 'far') farBubbles.push(bubble);
-        else if (finalLayer === 'mid') midBubbles.push(bubble);
-        else nearBubbles.push(bubble);
+        var dx = pos.x - cx;
+        var dy = pos.y - cy;
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var nx = -dy / len;
+        var ny = dx / len;
+        var t1 = 0.3 + Math.random() * 0.1;
+        var t2 = 0.65 + Math.random() * 0.1;
+        var curve1 = (Math.random() - 0.5) * 60;
+        var curve2 = (Math.random() - 0.5) * 40;
+        var cp1x = cx + dx * t1 + nx * curve1;
+        var cp1y = cy + dy * t1 + ny * curve1;
+        var cp2x = cx + dx * t2 + nx * curve2;
+        var cp2y = cy + dy * t2 + ny * curve2;
+        
+        var pathD = 'M ' + cx + ' ' + cy +
+                   ' C ' + cp1x.toFixed(1) + ' ' + cp1y.toFixed(1) +
+                   ', ' + cp2x.toFixed(1) + ' ' + cp2y.toFixed(1) +
+                   ', ' + pos.x.toFixed(1) + ' ' + pos.y.toFixed(1);
+        
+        svgParts.push('<path class="constellation-line" data-idx="' + idx + '" d="' + pathD + '" stroke="' + lineColor + '" stroke-width="1.5" fill="none" opacity="0.3" stroke-linecap="round" />');
       });
 
-      // 渲染气泡（远→中→近）
-      svgParts.push('<g class="bubble-layer bubble-layer--far">');
-      farBubbles.forEach(function(b) { svgParts.push('  ' + b); });
+      // 中心节点
+      svgParts.push('<g class="constellation-center">');
+      svgParts.push('  <circle cx="' + cx + '" cy="' + cy + '" r="110" fill="#FF6B35" opacity="0.08" />');
+      svgParts.push('  <circle cx="' + cx + '" cy="' + cy + '" r="80" fill="#FF6B35" opacity="0.12" />');
+      svgParts.push('  <circle cx="' + cx + '" cy="' + cy + '" r="58" fill="#FF6B35" filter="url(#centerShadow)" />');
+      // 灯泡
+      svgParts.push('  <g transform="translate(' + (cx - 16) + ', ' + (cy - 26) + ') scale(0.7)">');
+      svgParts.push('    <path d="M18 2C10.3 2 4 8.3 4 16c0 4.4 2.1 8.4 5.5 11l1 1.5V32c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-3.5l1-1.5C30.4 24.4 32 20.4 32 16 32 8.3 25.7 2 18 2z" fill="#FFF" opacity="0.95" />');
+      svgParts.push('    <line x1="12" y1="32" x2="24" y2="32" stroke="#FFF" stroke-width="2.5" stroke-linecap="round" />');
+      svgParts.push('    <line x1="14" y1="36" x2="22" y2="36" stroke="#FFF" stroke-width="2" stroke-linecap="round" />');
+      svgParts.push('    <path d="M14 18 Q18 12 22 18" stroke="#FF6B35" stroke-width="1.5" fill="none" />');
+      svgParts.push('  </g>');
+      svgParts.push('  <text x="' + cx + '" y="' + (cy + 24) + '" text-anchor="middle" font-size="16" font-weight="900" fill="#FFF" font-family="inherit" letter-spacing="1">OPC</text>');
       svgParts.push('</g>');
 
-      svgParts.push('<g class="bubble-layer bubble-layer--mid">');
-      midBubbles.forEach(function(b) { svgParts.push('  ' + b); });
-      svgParts.push('</g>');
-
-      svgParts.push('<g class="bubble-layer bubble-layer--near">');
-      nearBubbles.forEach(function(b) { svgParts.push('  ' + b); });
-      svgParts.push('</g>');
+      // 星星节点（SVG圆点 + 光晕）
+      shuffled.forEach(function(idea, idx) {
+        if (idx >= nodePositions.length) return;
+        var pos = nodePositions[idx];
+        var cat = getCategoryFromIdea(idea);
+        var colors = starColors[cat] || starColors.fresh;
+        var starColor = colors[idx % colors.length];
+        var starR = pos.layer === 'inner' ? 8 : pos.layer === 'mid' ? 6 : 5;
+        
+        // 光晕
+        svgParts.push('<circle cx="' + pos.x.toFixed(1) + '" cy="' + pos.y.toFixed(1) + '" r="' + (starR * 3) + '" fill="' + starColor + '" opacity="0.12" />');
+        // 星星
+        svgParts.push('<circle class="constellation-star" data-idx="' + idx + '" cx="' + pos.x.toFixed(1) + '" cy="' + pos.y.toFixed(1) + '" r="' + starR + '" fill="' + starColor + '" filter="url(#starGlow)" />');
+      });
 
       svgParts.push('</svg>');
+      
+      // 8. SVG层 + HTML标签层叠加
+      var svgLayer = document.createElement('div');
+      svgLayer.className = 'constellation-svg-layer';
+      svgLayer.innerHTML = svgParts.join('');
+      container.appendChild(svgLayer);
+      
+      // HTML标签层（文字清晰）
+      var labelLayer = document.createElement('div');
+      labelLayer.className = 'constellation-label-layer';
+      
+      shuffled.forEach(function(idea, idx) {
+        if (idx >= nodePositions.length) return;
+        var pos = nodePositions[idx];
+        var cat = getCategoryFromIdea(idea);
+        var colors = starColors[cat] || starColors.fresh;
+        var starColor = colors[idx % colors.length];
+        
+        var label = document.createElement('div');
+        label.className = 'constellation-label constellation-label--' + pos.layer;
+        label.dataset.idx = idx;
+        
+        // 计算百分比位置
+        var leftPct = (pos.x / W * 100).toFixed(2);
+        var topPct = (pos.y / H * 100).toFixed(2);
+        label.style.left = leftPct + '%';
+        label.style.top = topPct + '%';
+        
+        // 判断标签方向：左侧的标签放左边，右侧放右边
+        var isLeft = pos.x < cx;
+        label.style.transform = isLeft ? 'translate(-100%, -50%)' : 'translate(0, -50%)';
+        label.style.paddingLeft = isLeft ? '0' : '18px';
+        label.style.paddingRight = isLeft ? '18px' : '0';
+        label.style.textAlign = isLeft ? 'right' : 'left';
+        
+        // 标签内容
+        var title = idea.title || '未命名';
+        var dot = document.createElement('span');
+        dot.className = 'constellation-label__dot';
+        dot.style.backgroundColor = starColor;
+        
+        var text = document.createElement('span');
+        text.className = 'constellation-label__text';
+        text.textContent = title;
+        
+        if (isLeft) {
+          label.appendChild(text);
+          label.appendChild(dot);
+        } else {
+          label.appendChild(dot);
+          label.appendChild(text);
+        }
+        
+        // 交互
+        label.addEventListener('click', function(e) {
+          e.stopPropagation();
+          window.openIdeaTag(idea.title || '', idea.content || '', cat === 'system', idea.id);
+        });
+        
+        label.addEventListener('mouseenter', function() {
+          label.classList.add('constellation-label--hover');
+          var lines = svgLayer.querySelectorAll('.constellation-line');
+          if (lines[idx]) { lines[idx].setAttribute('opacity', '0.8'); lines[idx].setAttribute('stroke-width', '2.5'); }
+          var stars = svgLayer.querySelectorAll('.constellation-star');
+          if (stars[idx]) stars[idx].setAttribute('r', parseFloat(stars[idx].getAttribute('r')) * 1.5);
+        });
+        label.addEventListener('mouseleave', function() {
+          label.classList.remove('constellation-label--hover');
+          var lines = svgLayer.querySelectorAll('.constellation-line');
+          if (lines[idx]) { lines[idx].setAttribute('opacity', '0.3'); lines[idx].setAttribute('stroke-width', '1.5'); }
+          var stars = svgLayer.querySelectorAll('.constellation-star');
+          var origR = pos.layer === 'inner' ? 8 : pos.layer === 'mid' ? 6 : 5;
+          if (stars[idx]) stars[idx].setAttribute('r', origR);
+        });
+        
+        labelLayer.appendChild(label);
+      });
+      
+      container.appendChild(labelLayer);
 
-      container.innerHTML = svgParts.join('');
-
-      // 15. 统计
+      // 9. 统计
       var statsEl = document.getElementById('ideaStats');
       if (statsEl) {
         var showCount = filtered.length;
@@ -1140,13 +1017,13 @@
                        currentIdeaCategory === 'system' ? '系统精选' :
                        currentIdeaCategory === 'hot' ? '热门项目' :
                        currentIdeaCategory === 'user' ? '客户发起' : '最新创意';
-        statsEl.innerHTML = '<span>🌳 创意树上挂着 <strong style="color:#fff">' + showCount + '</strong> 条创意 / 共 ' + totalCount + ' 条</span>' +
+        statsEl.innerHTML = '<span>✨ 星座图中有 <strong style="color:#fff">' + showCount + '</strong> 个创意 / 共 ' + totalCount + ' 个</span>' +
           '<span style="color:rgba(255,255,255,0.4)">分类: ' + catLabel + '</span>' +
           '<span style="color:rgba(255,255,255,0.4)">' +
             '<span style="color:#FF6B6B">●</span> ' + cats.system + ' 精选 · ' +
-            '<span style="color:#FFB066">●</span> ' + cats.hot + ' 热门 · ' +
-            '<span style="color:#7DDFA0">●</span> ' + cats.user + ' 发起 · ' +
-            '<span style="color:#7FB8FF">●</span> ' + cats.fresh + ' 最新' +
+            '<span style="color:#4CAF50">●</span> ' + cats.hot + ' 热门 · ' +
+            '<span style="color:#42A5F5">●</span> ' + cats.user + ' 发起 · ' +
+            '<span style="color:#AB47BC">●</span> ' + cats.fresh + ' 最新' +
           '</span>';
       }
     }

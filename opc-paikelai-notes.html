@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>创客OPC · 同城共建商圈 · 项目笔记</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f1e3;
+    --paper-2:#fdf9f0;
+    --card:#fffdf6;
+    --ink:#34302a;
+    --ink-soft:#6b6052;
+    --ink-faint:#938875;
+    --line:#e6dcc6;
+    --ribbon-red:#9e2b25;
+    --ribbon-gold:#b08d57;
+    --ribbon-teal:#2f6f6a;
+    --ribbon-plum:#5b3a66;
+    --sys1:#c8742a;
+    --sys2:#2f6f6a;
+    --serif:"Noto Serif SC","Songti SC","STSong",serif;
+    --garamond:"EB Garamond",var(--serif);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{
+    font-family:var(--serif);
+    color:var(--ink);
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(176,141,87,0.06), transparent 40%),
+      radial-gradient(circle at 88% 72%, rgba(47,111,106,0.05), transparent 42%);
+    line-height:1.85;
+    font-size:17px;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:0.035;
+    pointer-events:none;
+    z-index:60;
+  }
+
+  .wrap{max-width:980px;margin:0 auto;padding:0 22px;}
+
+  /* decorative side bookmark ribbons (desktop) */
+  .side-ribbon{display:none;}
+  @media(min-width:1080px){
+    .side-ribbon{
+      display:block;position:fixed;left:0;top:140px;width:16px;height:240px;
+      background:linear-gradient(180deg,var(--ribbon-red),#7c201c);
+      clip-path:polygon(0 0,100% 0,100% 100%,50% 86%,0 100%);
+      box-shadow:2px 2px 6px rgba(0,0,0,0.18);z-index:40;
+    }
+    .side-ribbon.two{top:430px;background:linear-gradient(180deg,var(--ribbon-gold),#8a6c3d);}
+    .side-ribbon.three{top:720px;background:linear-gradient(180deg,var(--ribbon-teal),#22524e);}
+  }
+
+  /* ===== HERO ===== */
+  .hero{
+    position:relative;
+    min-height:clamp(440px,70vh,660px);
+    display:flex;align-items:flex-end;
+    background-color:#241f1a;
+    background-image:url("Photorealistic_cinematic_hero__2026-07-13T13-07-00.png");
+    background-size:cover;background-position:center 35%;
+    padding:clamp(28px,6vw,76px);
+    color:#f6eedd;overflow:hidden;
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(to top,
+      rgba(18,14,10,0.95) 0%,
+      rgba(18,14,10,0.64) 44%,
+      rgba(18,14,10,0.30) 100%);
+  }
+  .hero-ribbon{
+    position:absolute;top:0;left:clamp(28px,6vw,76px);
+    width:46px;height:78px;
+    background:linear-gradient(180deg,var(--ribbon-gold),#8a6c3d);
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);
+    z-index:2;box-shadow:0 4px 10px rgba(0,0,0,0.25);
+  }
+  .hero-inner{position:relative;z-index:2;max-width:780px;width:100%;}
+  .hero-eyebrow{
+    font-size:0.8rem;letter-spacing:0.4em;text-transform:uppercase;
+    color:var(--ribbon-gold);border-top:1px solid rgba(176,141,87,0.6);
+    display:inline-block;padding-top:10px;margin-bottom:18px;
+  }
+  .hero h1{
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(2.3rem,7vw,4.2rem);line-height:1.08;letter-spacing:0.03em;
+    text-shadow:0 2px 18px rgba(0,0,0,0.5);
+  }
+  .hero .en{font-family:var(--garamond);font-style:italic;font-size:clamp(1rem,3vw,1.4rem);color:#e7d9bf;margin-top:8px;opacity:0.92;}
+  .hero .lead{margin-top:16px;font-size:clamp(1rem,2.6vw,1.2rem);color:#f0e6d2;max-width:620px;}
+  .hero-stats{display:flex;flex-wrap:wrap;gap:clamp(18px,4vw,42px);margin-top:26px;}
+  .hero-stats .st .num{font-family:var(--garamond);font-weight:700;font-size:clamp(1.5rem,4vw,2.1rem);color:var(--ribbon-gold);line-height:1;}
+  .hero-stats .st .lbl{font-size:0.82rem;color:#e9ddc6;margin-top:4px;}
+
+  /* ===== SECTION SHELL ===== */
+  section{padding:clamp(46px,7vw,82px) 0;border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+
+  .ribbon-label{
+    display:inline-block;color:#fff;font-weight:600;font-size:0.92rem;letter-spacing:0.14em;
+    padding:9px 22px 14px;margin-bottom:8px;background:var(--ribbon-red);
+    clip-path:polygon(0 0,100% 0,100% 100%,50% 82%,0 100%);
+  }
+  .ribbon-label.gold{background:var(--ribbon-gold);}
+  .ribbon-label.teal{background:var(--ribbon-teal);}
+  .ribbon-label.plum{background:var(--ribbon-plum);}
+
+  h2.title{font-family:var(--serif);font-weight:700;font-size:clamp(1.6rem,4.4vw,2.4rem);color:var(--ink);margin:14px 0 6px;letter-spacing:0.02em;}
+  .subtitle{color:var(--ink-faint);font-size:0.96rem;margin-bottom:30px;font-style:italic;}
+
+  /* ===== PROJECT INFO ===== */
+  .book-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:8px;}
+  .meta-card{
+    background:var(--card);border:1px solid var(--line);border-left:5px solid var(--ribbon-gold);
+    border-radius:4px;padding:18px 20px;box-shadow:0 6px 16px rgba(80,60,30,0.05);
+  }
+  .meta-card .k{font-size:0.78rem;letter-spacing:0.18em;color:var(--ribbon-gold);text-transform:uppercase;margin-bottom:6px;}
+  .meta-card .v{font-size:1.04rem;color:var(--ink);font-weight:500;}
+  .meta-card .v small{display:block;color:var(--ink-soft);font-weight:400;font-size:0.9rem;margin-top:4px;line-height:1.6;}
+  .proposition{
+    background:linear-gradient(180deg,var(--paper-2),var(--card));border:1px solid var(--line);
+    border-radius:6px;padding:24px 26px;margin-top:22px;box-shadow:0 8px 22px rgba(80,60,30,0.06);
+  }
+  .proposition .lead{color:var(--ribbon-red);font-weight:600;letter-spacing:0.1em;font-size:0.85rem;margin-bottom:10px;}
+  .proposition .tags{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;}
+  .proposition .tags span{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:5px 14px;font-size:0.88rem;color:var(--ink-soft);}
+
+  /* ===== ONE-LINE OVERVIEW ===== */
+  .overview{
+    background:var(--ink);color:#f3ead7;border-radius:8px;padding:clamp(30px,5vw,52px);
+    position:relative;box-shadow:0 14px 34px rgba(40,30,15,0.16);
+  }
+  .overview::before{content:"\201C";font-family:var(--garamond);position:absolute;top:-6px;left:18px;font-size:6rem;color:rgba(176,141,87,0.35);line-height:1;}
+  .overview p{font-size:clamp(1.2rem,3.6vw,1.7rem);line-height:1.7;font-weight:500;position:relative;z-index:1;padding-left:14px;}
+  .overview .mark{color:var(--ribbon-gold);font-weight:700;}
+
+  /* ===== DUAL MODE ===== */
+  .systems{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  @media(max-width:720px){.systems{grid-template-columns:1fr;}}
+  .sys{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 10px 26px rgba(80,60,30,0.07);}
+  .sys-head{padding:20px 24px;color:#fff;display:flex;align-items:baseline;gap:12px;}
+  .sys-1 .sys-head{background:linear-gradient(135deg,var(--sys1),#a85c1f);}
+  .sys-2 .sys-head{background:linear-gradient(135deg,var(--sys2),#224f4b);}
+  .sys-head .num{font-family:var(--garamond);font-style:italic;font-size:1.6rem;opacity:0.85;}
+  .sys-head h3{font-size:1.3rem;font-weight:700;}
+  .sys-head .en{font-size:0.85rem;opacity:0.85;margin-left:auto;font-style:italic;font-family:var(--garamond);}
+  .sys-body{padding:22px 24px;}
+  .sys-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line);}
+  .sys-row:last-child{border-bottom:none;}
+  .sys-row .tag{font-size:0.74rem;flex:0 0 64px;color:var(--ink-faint);letter-spacing:0.08em;padding-top:3px;}
+  .sys-row .txt{color:var(--ink);font-size:0.98rem;}
+  .sys-note{margin-top:18px;font-size:0.95rem;color:var(--ink-soft);background:var(--paper-2);border-radius:6px;padding:14px 16px;border:1px solid var(--line);}
+  .sys-note b{color:var(--ribbon-red);}
+
+  /* ===== CARDS (benefits) ===== */
+  .bias-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  @media(max-width:720px){.bias-grid{grid-template-columns:1fr;}}
+  .bias{position:relative;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:24px 22px 22px;box-shadow:0 8px 22px rgba(80,60,30,0.06);transition:transform .2s ease,box-shadow .2s ease;}
+  .bias:hover{transform:translateY(-4px);box-shadow:0 16px 32px rgba(80,60,30,0.12);}
+  .bias::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:5px;border-radius:3px;background:var(--ribbon-teal);}
+  .bias:nth-child(2)::before{background:var(--ribbon-gold);}
+  .bias:nth-child(3)::before{background:var(--ribbon-red);}
+  .bias:nth-child(4)::before{background:var(--ribbon-plum);}
+  .bias .idx{font-family:var(--garamond);font-style:italic;color:var(--ink-faint);font-size:0.95rem;}
+  .bias h3{font-size:1.18rem;font-weight:700;margin:2px 0 10px;color:var(--ink);}
+  .bias .def{font-size:0.97rem;color:var(--ink);line-height:1.7;}
+
+  /* ===== SERVICES GRID ===== */
+  .services-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  .svc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ribbon-teal);border-radius:6px;padding:14px 16px;box-shadow:0 5px 14px rgba(80,60,30,0.05);}
+  .svc b{color:var(--ribbon-red);display:block;font-size:1.02rem;margin-bottom:3px;}
+  .svc span{font-size:0.92rem;color:var(--ink-soft);}
+  .svc-note{margin-top:18px;font-size:0.92rem;color:var(--ink-soft);background:var(--paper-2);border:1px solid var(--line);border-radius:6px;padding:12px 16px;}
+
+  /* ===== TIMELINE ===== */
+  .timeline{position:relative;margin-top:10px;padding-left:8px;}
+  .timeline::before{content:"";position:absolute;left:26px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,var(--ribbon-gold),var(--ribbon-teal),var(--ribbon-plum));}
+  .node{position:relative;padding:0 0 26px 64px;}
+  .node:last-child{padding-bottom:0;}
+  .node .bead{position:absolute;left:14px;top:2px;width:28px;height:28px;border-radius:50%;background:var(--paper);border:2px solid var(--ribbon-red);color:var(--ribbon-red);font-weight:700;font-size:0.95rem;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px var(--paper);}
+  .node:nth-child(2) .bead{border-color:var(--ribbon-gold);color:var(--ribbon-gold);}
+  .node:nth-child(3) .bead{border-color:var(--ribbon-teal);color:var(--ribbon-teal);}
+  .node:nth-child(4) .bead{border-color:var(--ribbon-plum);color:var(--ribbon-plum);}
+  .node h3{font-size:1.12rem;font-weight:700;color:var(--ink);}
+  .node .en{font-size:0.8rem;color:var(--ink-faint);font-style:italic;font-family:var(--garamond);}
+  .node p{font-size:0.95rem;color:var(--ink-soft);margin-top:4px;}
+
+  /* ===== QUOTES ===== */
+  .quotes{display:grid;gap:20px;}
+  .quote{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--ribbon-gold);border-radius:6px;padding:24px 26px 22px;position:relative;box-shadow:0 8px 20px rgba(80,60,30,0.05);}
+  .quote:nth-child(even){border-left-color:var(--ribbon-teal);}
+  .quote .mark{font-family:var(--garamond);font-size:3rem;color:rgba(176,141,87,0.4);line-height:0.6;display:block;margin-bottom:6px;}
+  .quote p{font-size:1.12rem;line-height:1.75;color:var(--ink);font-weight:500;font-style:italic;}
+
+  /* ===== ACTION ===== */
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:720px){.actions{grid-template-columns:1fr;}}
+  .action{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px 20px;display:flex;gap:14px;align-items:flex-start;box-shadow:0 6px 16px rgba(80,60,30,0.05);}
+  .action .n{flex:0 0 34px;height:34px;border-radius:50%;background:var(--ribbon-red);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.95rem;}
+  .action:nth-child(even) .n{background:var(--ribbon-teal);}
+  .action .ct h4{font-size:1.04rem;font-weight:700;margin-bottom:3px;color:var(--ink);}
+  .action .ct p{font-size:0.93rem;color:var(--ink-soft);line-height:1.6;}
+
+  /* ===== CHIPS ===== */
+  .chips{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;}
+  .chip{position:relative;padding:10px 20px 10px 30px;border-radius:30px;font-size:0.98rem;font-weight:500;background:var(--card);border:1px solid var(--line);color:var(--ink);box-shadow:0 4px 12px rgba(80,60,30,0.05);}
+  .chip::before{content:"";position:absolute;left:14px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:2px;background:var(--ribbon-gold);}
+  .chip:nth-child(2)::before{background:var(--ribbon-red);}
+  .chip:nth-child(3)::before{background:var(--ribbon-teal);}
+  .chip:nth-child(4)::before{background:var(--ribbon-plum);}
+  .chip:nth-child(5)::before{background:var(--sys1);}
+  .chip:nth-child(6)::before{background:var(--sys2);}
+  .chip:nth-child(7)::before{background:var(--ribbon-gold);}
+
+  /* ===== CREATIVE TREE ===== */
+  .tree-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:18px;font-size:0.88rem;color:var(--ink-soft);}
+  .tree-legend span{display:inline-flex;align-items:center;gap:7px;}
+  .tree-legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .tree-cloud{display:flex;flex-wrap:wrap;gap:10px;}
+  .tree-cloud .t{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:7px 15px;font-size:0.9rem;color:var(--ink-soft);box-shadow:0 3px 9px rgba(80,60,30,0.04);transition:transform .15s ease,color .15s ease;}
+  .tree-cloud .t:hover{transform:translateY(-2px);color:var(--ink);}
+  .tree-cloud .t.hl{background:var(--ribbon-red);border-color:var(--ribbon-red);color:#fff;font-weight:700;box-shadow:0 4px 12px rgba(158,43,37,0.22);}
+  .tree-cloud .t.hl::after{content:" \2605";color:#ffdca8;font-size:0.85em;}
+  .tree-counts{margin-top:20px;font-size:0.9rem;color:var(--ink-faint);display:flex;flex-wrap:wrap;gap:8px 18px;}
+  .tree-counts b{color:var(--ribbon-red);}
+
+  /* ===== PROJECTS ===== */
+  .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+  .proj{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:20px 22px;box-shadow:0 8px 20px rgba(80,60,30,0.06);position:relative;}
+  .proj .stage{position:absolute;top:18px;right:18px;font-size:0.74rem;font-weight:600;padding:3px 12px;border-radius:20px;}
+  .proj .stage.s1{background:rgba(47,111,106,0.12);color:var(--ribbon-teal);}
+  .proj .stage.s2{background:rgba(176,141,87,0.16);color:var(--ribbon-gold);}
+  .proj .stage.s3{background:rgba(158,43,37,0.12);color:var(--ribbon-red);}
+  .proj h3{font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:8px;padding-right:70px;}
+  .proj p{font-size:0.93rem;color:var(--ink-soft);line-height:1.65;}
+
+  /* ===== FOOTER ===== */
+  footer{background:var(--ink);color:#cdbfa3;text-align:center;padding:40px 22px;font-size:0.86rem;line-height:1.8;}
+  footer .f-title{color:#f3ead7;font-weight:600;letter-spacing:0.2em;font-size:0.8rem;margin-bottom:8px;}
+  footer a{color:var(--ribbon-gold);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<div class="side-ribbon"></div>
+<div class="side-ribbon two"></div>
+<div class="side-ribbon three"></div>
+
+<!-- ===== HERO ===== -->
+<header class="hero">
+  <div class="hero-ribbon"></div>
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Project Notes · 同城 AI 共建</span>
+    <h1>创客OPC · 共建商圈</h1>
+    <div class="en">一个项目，众人共创</div>
+    <div class="lead">汇聚同城 AI 爱好者、创业者、实体商家 —— 以 AI 赋能本地商业，共建 · 共享 · 共赢。</div>
+    <div class="hero-stats">
+      <div class="st"><div class="num">100+</div><div class="lbl">免费成员</div></div>
+      <div class="st"><div class="num">4</div><div class="lbl">大专属福利</div></div>
+      <div class="st"><div class="num">5</div><div class="lbl">共建项目</div></div>
+      <div class="st"><div class="num">7</div><div class="lbl">核心服务</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== PROJECT INFO ===== -->
+<section id="info">
+  <div class="wrap">
+    <span class="ribbon-label">项目信息</span>
+    <h2 class="title">关于这个圈子</h2>
+    <p class="subtitle">我们是谁 · 面向谁 · 要做什么 —— 先认清它的定位</p>
+
+    <div class="book-meta">
+      <div class="meta-card">
+        <div class="k">Who</div>
+        <div class="v">纯同城 AI 互助共创圈子<small>无需深厚技术，有想法就能来；打破单人创业壁垒</small></div>
+      </div>
+      <div class="meta-card">
+        <div class="k">For</div>
+        <div class="v">普通人 · 上班族 · 实体店主 · 创业者<small>面向所有想用 AI 提效、落地项目的人</small></div>
+      </div>
+      <div class="meta-card">
+        <div class="k">Mission</div>
+        <div class="v">免费赋能 · 项目孵化 · 资源对接 · 同城落地<small>抱团用 AI 赚钱、提效、做项目</small></div>
+      </div>
+    </div>
+
+    <div class="proposition">
+      <div class="lead">核心定位</div>
+      <p>一个不靠单打独斗的本地 AI 圈子：你出想法，圈子出算力、资源与落地通道，把「一个人的创业」变成「一群人的共创」。</p>
+      <div class="tags">
+        <span>免费赋能</span><span>项目孵化</span><span>资源对接</span><span>同城落地</span><span>抱团共创</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ONE-LINE OVERVIEW ===== -->
+<section id="overview">
+  <div class="wrap">
+    <span class="ribbon-label gold">一句话总览</span>
+    <h2 class="title">它到底在做什么</h2>
+    <p class="subtitle">用一句话压下全站的份量</p>
+    <div class="overview">
+      <p>不是一个人闷头干，而是一群同城人用 AI <span class="mark">抱团搞事情</span>——你提需求，圈子给你算力、资源与人脉，把点子真正落地。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DUAL MODE ===== -->
+<section id="modes">
+  <div class="wrap">
+    <span class="ribbon-label teal">两种赋能方式</span>
+    <h2 class="title">线上自助 vs 线下共创</h2>
+    <p class="subtitle">圈子提供两条互补的赋能路径，一个快、一个深</p>
+
+    <div class="systems">
+      <div class="sys sys-1">
+        <div class="sys-head"><span class="num">A</span><h3>线上自助赋能</h3><span class="en">On-demand</span></div>
+        <div class="sys-body">
+          <div class="sys-row"><span class="tag">节奏</span><span class="txt">随时可用，自助操作，不受时空限制</span></div>
+          <div class="sys-row"><span class="tag">方式</span><span class="txt">账号自助、自主充值、按需生成</span></div>
+          <div class="sys-row"><span class="tag">擅长</span><span class="txt">海报、文案、视频脚本、商业 PPT 等办公素材</span></div>
+          <div class="sys-row"><span class="tag">弱项</span><span class="txt">偏工具输出，缺少深度的人脉与协作</span></div>
+          <div class="sys-row"><span class="tag">例子</span><span class="txt">登录自助 AI 工具平台，自己充值生成一套宣传物料</span></div>
+        </div>
+      </div>
+
+      <div class="sys sys-2">
+        <div class="sys-head"><span class="num">B</span><h3>线下共创落地</h3><span class="en">In-person</span></div>
+        <div class="sys-body">
+          <div class="sys-row"><span class="tag">节奏</span><span class="txt">定期举办，面对面，真实可感</span></div>
+          <div class="sys-row"><span class="tag">方式</span><span class="txt">沙龙、项目交流会、技能培训</span></div>
+          <div class="sys-row"><span class="tag">擅长</span><span class="txt">实战对接、资源落地、找合伙人</span></div>
+          <div class="sys-row"><span class="tag">弱项</span><span class="txt">受时间地点约束，需到场参与</span></div>
+          <div class="sys-row"><span class="tag">例子</span><span class="txt">参加小型 AI 沙龙，当场对接到同城商家与创业伙伴</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sys-note">
+      <b>关键关系：</b>线上负责「随时提效」，线下负责「深度落地」。两条路径互补——先用自助工具把事做起来，再靠线下圈子把人脉与项目真正打通。
+    </div>
+  </div>
+</section>
+
+<!-- ===== BENEFITS ===== -->
+<section id="benefits">
+  <div class="wrap">
+    <span class="ribbon-label">四大专属福利</span>
+    <h2 class="title">加入即可获得</h2>
+    <p class="subtitle">入圈即享的四项实在权益</p>
+
+    <div class="bias-grid">
+      <div class="bias">
+        <div class="idx">No.01</div>
+        <h3>免费实现 AI 小愿望</h3>
+        <div class="def">提交你的 AI 设计或开发需求，排队有序服务。支持 AI 海报、PPT、宣传单页、简易网站、文案润色等，一人一愿，质量保证。</div>
+      </div>
+      <div class="bias">
+        <div class="idx">No.02</div>
+        <h3>自助 AI 工具账号</h3>
+        <div class="def">入圈即享自助 AI 工具平台账号，支持自主充值、独立操作。按需生成海报、文案、视频脚本、商业 PPT 等办公素材。</div>
+      </div>
+      <div class="bias">
+        <div class="idx">No.03</div>
+        <h3>同城资源与项目对接</h3>
+        <div class="def">对接同城人脉、商家与创业伙伴，项目合作机会优先推荐。人脉即钱脉，在圈子里找到志同道合的同行者。</div>
+      </div>
+      <div class="bias">
+        <div class="idx">No.04</div>
+        <h3>线下沙龙与实战培训</h3>
+        <div class="def">定期举办小型 AI 沙龙、项目交流会与技能培训。面对面学习对接，真实可感，实战出真知。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROJECTS ===== -->
+<section id="projects">
+  <div class="wrap">
+    <span class="ribbon-label plum">共建项目</span>
+    <h2 class="title">正在孵化的项目</h2>
+    <p class="subtitle">同城共创 · 抱团落地 —— 部分处于推广 / 预热 / 预留阶段</p>
+
+    <div class="proj-grid">
+      <div class="proj">
+        <span class="stage s1">推广阶段</span>
+        <h3>柏康到家</h3>
+        <p>一站式线上购药平台。26 年 5 月上线，目前为推广阶段，此商城是 BtoBtoC 模式。</p>
+      </div>
+      <div class="proj">
+        <span class="stage s2">初期预热</span>
+        <h3>AI 装企智能体</h3>
+        <p>针对装修公司的一款全链接智能体，为众筹项目，目前为初期预热阶段。</p>
+      </div>
+      <div class="proj">
+        <span class="stage s3">预留点位</span>
+        <h3>项目待定</h3>
+        <p>此项目点位预留中，欢迎有想法的伙伴提交共创方案，抱团落地。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section id="services">
+  <div class="wrap">
+    <span class="ribbon-label gold">七项服务全链路</span>
+    <h2 class="title">从技能到落地，一站式赋能</h2>
+    <p class="subtitle">覆盖学习、定制、孵化、对接、落地的完整服务链</p>
+
+    <div class="services-grid">
+      <div class="svc"><b>AI 技能培训教学</b><span>从零基础到实战应用，手把手教你用 AI 提效</span></div>
+      <div class="svc"><b>AI 商业物料定制</b><span>按需定制海报、文案、视频等商业物料</span></div>
+      <div class="svc"><b>定制 AI 软件开发</b><span>面向具体业务的 AI 工具与系统定制</span></div>
+      <div class="svc"><b>同城商业 AI 赋能</b><span>把 AI 能力注入本地商业场景</span></div>
+      <div class="svc"><b>创业项目孵化</b><span>好点子 → 好产品 → 好生意</span></div>
+      <div class="svc"><b>社群资源对接</b><span>连接人脉、商家与项目合作机会</span></div>
+      <div class="svc"><b>线下沙龙落地</b><span>面对面交流，真实可感的成长体验</span></div>
+    </div>
+    <div class="svc-note">另有 <b style="color:var(--ribbon-red)">20 场线上直播</b> 持续输出实操内容与案例拆解。</div>
+  </div>
+</section>
+
+<!-- ===== RULES / TIMELINE ===== -->
+<section id="rules">
+  <div class="wrap">
+    <span class="ribbon-label teal">共建规则</span>
+    <h2 class="title">从想法到落地的四步</h2>
+    <p class="subtitle">透明 · 公平 · 共创 —— 一套人人可参与的流程</p>
+
+    <div class="timeline">
+      <div class="node">
+        <div class="bead">1</div>
+        <h3>自主提交</h3>
+        <div class="en">Submit</div>
+        <p>提交你的 AI 创业点子、商业项目或定制开发需求。</p>
+      </div>
+      <div class="node">
+        <div class="bead">2</div>
+        <h3>评估立项</h3>
+        <div class="en">Review</div>
+        <p>统一进行可行性审核，筛选优质项目立项孵化。</p>
+      </div>
+      <div class="node">
+        <div class="bead">3</div>
+        <h3>全员共建</h3>
+        <div class="en">Co-build</div>
+        <p>依托 AI 技术全员协作，落地软件开发、商业赋能、流量变现。</p>
+      </div>
+      <div class="node">
+        <div class="bead">4</div>
+        <h3>协作共赢</h3>
+        <div class="en">Win together</div>
+        <p>学习、协作、拓展，共同壮大同城 AI 商圈生态。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CREATIVE TREE ===== -->
+<section id="tree">
+  <div class="wrap">
+    <span class="ribbon-label">同城创意树</span>
+    <h2 class="title">挂上枝头的 53 个灵感</h2>
+    <p class="subtitle">把每一位伙伴的灵感挂上枝头 —— 红色精选 · 橙色热门 · 绿色发起 · 蓝色最新</p>
+
+    <div class="tree-legend">
+      <span><i style="background:#c0392b"></i>红色 · 系统精选</span>
+      <span><i style="background:#d98324"></i>橙色 · 热门项目</span>
+      <span><i style="background:#4a8c5c"></i>绿色 · 客户发起</span>
+      <span><i style="background:#3a7bbf"></i>蓝色 · 最新创意</span>
+    </div>
+
+    <div class="tree-cloud">
+      <span class="t hl">柏康到家</span><span class="t hl">AI 装企智能体</span><span class="t hl">亿点智能</span><span class="t">社区团购平台</span><span class="t">邻里互助平台</span><span class="t">同城共享工具</span><span class="t">智慧门店系统</span><span class="t">AI 选品工具</span><span class="t">社区团购 2.0</span><span class="t">AI 简历优化</span><span class="t">智能花店系统</span><span class="t">AI 营销文案</span><span class="t">AI 绘画定制</span><span class="t">AI 健康管理</span><span class="t">AI 智能客服</span><span class="t">AI 语音转写</span><span class="t">AI 英语陪练</span><span class="t">智能数据看板</span><span class="t">AI 写作助手</span><span class="t">短视频自动生成</span><span class="t">智慧菜市场</span><span class="t">本地仓储共享</span><span class="t">同城二手交易</span><span class="t">AI 宠物翻译</span><span class="t">本地美食地图</span><span class="t">同城拼车通勤</span><span class="t">本地生活小程序</span><span class="t">AI 塔罗占卜</span><span class="t">AI 电商客服</span><span class="t">AI 面试模拟</span><span class="t">AI 辅助设计</span><span class="t">AI PPT 生成</span><span class="t">AI 合同审查</span><span class="t">AI 穿搭推荐</span><span class="t">智能充电桩</span><span class="t">AI 音乐创作</span><span class="t">智慧自习室</span><span class="t">同城活动日历</span><span class="t">本地健身管家</span><span class="t">AI 美甲设计</span><span class="t">AI 旅游规划</span><span class="t">宠物服务平台</span><span class="t">智能停车系统</span><span class="t">智能排班系统</span><span class="t">装修报价助手</span><span class="t">智能快递柜</span><span class="t">AI 情感分析</span><span class="t">同城跑腿服务</span><span class="t">智能招聘助手</span><span class="t">智能培训平台</span><span class="t">AI 财税代账</span><span class="t">本地家政预约</span><span class="t">AI 证件照</span>
+    </div>
+
+    <div class="tree-counts">
+      <span><b>53</b> 全部创意</span>
+      <span><b>13</b> 系统精选</span>
+      <span><b>13</b> 热门项目</span>
+      <span><b>12</b> 客户发起</span>
+      <span><b>12</b> 最新创意</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== QUOTES ===== -->
+<section id="quotes">
+  <div class="wrap">
+    <span class="ribbon-label gold">理念金句</span>
+    <h2 class="title">圈子的几句话</h2>
+    <p class="subtitle">来自项目页的核心标语与主张</p>
+
+    <div class="quotes">
+      <div class="quote">
+        <span class="mark">&ldquo;</span>
+        <p>打破单人创业壁垒，抱团用 AI 赚钱、提效、做项目。</p>
+      </div>
+      <div class="quote">
+        <span class="mark">&ldquo;</span>
+        <p>人脉即钱脉，在圈子里找到志同道合的同行者。</p>
+      </div>
+      <div class="quote">
+        <span class="mark">&ldquo;</span>
+        <p>一个项目，众人共创。</p>
+      </div>
+      <div class="quote">
+        <span class="mark">&ldquo;</span>
+        <p>好点子 → 好产品 → 好生意。</p>
+      </div>
+      <div class="quote">
+        <span class="mark">&ldquo;</span>
+        <p>以 AI 赋能本地商业 · 共建 · 共享 · 共赢。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ACTION ===== -->
+<section id="action">
+  <div class="wrap">
+    <span class="ribbon-label teal">行动指南</span>
+    <h2 class="title">怎么开始参与</h2>
+    <p class="subtitle">从入圈到落地的几条实在路径</p>
+
+    <div class="actions">
+      <div class="action"><span class="n">1</span><div class="ct"><h4>提交 AI 小愿望</h4><p>一人一愿，排队有序服务，先到先得，质量保证。</p></div></div>
+      <div class="action"><span class="n">2</span><div class="ct"><h4>领取自助工具账号</h4><p>入圈即用，自主充值生成海报、文案、视频脚本等素材。</p></div></div>
+      <div class="action"><span class="n">3</span><div class="ct"><h4>参加线下沙龙</h4><p>面对面学习、对接、落地，实战出真知。</p></div></div>
+      <div class="action"><span class="n">4</span><div class="ct"><h4>对接同城资源</h4><p>找合伙人、商家与项目机会，人脉即钱脉。</p></div></div>
+      <div class="action"><span class="n">5</span><div class="ct"><h4>提交共创方案</h4><p>有好点子就提交，经评估立项后全员共建。</p></div></div>
+      <div class="action"><span class="n">6</span><div class="ct"><h4>申请项目孵化</h4><p>从好点子到好产品、好生意，一站式陪跑。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHO ===== -->
+<section id="who">
+  <div class="wrap">
+    <span class="ribbon-label">适合谁加入</span>
+    <h2 class="title">这个圈子，找的是你吗</h2>
+    <p class="subtitle">如果你符合其中一条，它就值得进</p>
+    <div class="chips">
+      <span class="chip">普通人</span>
+      <span class="chip">上班族</span>
+      <span class="chip">实体店主</span>
+      <span class="chip">创业者</span>
+      <span class="chip">AI 爱好者</span>
+      <span class="chip">想落地项目的人</span>
+      <span class="chip">本地商家</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-title">PROJECT NOTES</div>
+  <div>创客 OPC · 同城共建商圈 ｜ 一个项目，众人共创</div>
+  <div>本页为 opc.paikelai.cn 项目内容的整理笔记，套用优雅阅读笔记模板，文案均来自原站；视觉与结构为二次编排。</div>
+</footer>
+
+</body>
+</html>
